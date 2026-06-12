@@ -402,7 +402,7 @@ app.post('/join', (req, res) => {
 
   try {
     db.prepare(`INSERT INTO clients
-      (name, company, email, sector, industry, bio, intro_status, source, notes, region, focus_areas, pain_points, ai_solutions, tags, created_at, updated_at)
+      (name, company, contact_email, sector, industry, bio, intro_status, source, notes, region, focus_areas, pain_points, ai_solutions, tags, created_at, updated_at)
       VALUES
       (?, ?, ?, ?, ?, ?, 'pending', 'Self-submitted via /join', ?, ?, '[]', '[]', '[]', '["self-submitted"]', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`)
       .run(name, company, email, sector, industry, bio, notes, 'ZA');
