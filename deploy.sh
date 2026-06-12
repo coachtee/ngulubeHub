@@ -44,6 +44,8 @@ docker run -d \
   -e PORT="$CONTAINER_PORT" \
   -v "${VOLUME_NAME}:/app/data" \
   "$IMAGE_TAG"
+# Note: the container's entrypoint script fixes /app/data ownership
+# automatically. No chown step needed here.
 
 echo "==> [5/5] Waiting 3s and checking health"
 sleep 3

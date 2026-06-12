@@ -36,6 +36,14 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=20s \
   CMD wget -q --spider http://localhost:3000/health || exit 1
 
+# Use a small startup script that runs as root to fix volume ownership
+# (when a volume was created by an older container running as a different
+# user, the SQLite file ends up owned by the wrong UID and writes fail).
+# Then it drops privileges to the 'ngulube' user via su-exec.
+RUN apk add --no-cache su-exec
+COPY --chown=root:root docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # tini = proper signal handling for PID 1
-ENTRYPOINT ["/sbin/tini", "--"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/docker-entrypoint.sh"]
 CMD ["node", "server.js"]
