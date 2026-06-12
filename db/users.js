@@ -29,8 +29,14 @@ function verifyPassword(username, password) {
   const user = getByUsername(username);
   if (!user) return null;
   if (!bcrypt.compareSync(password, user.password_hash)) return null;
-  // update last login
-  db.prepare('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?').run(user.id);
+  // update last login — wrap in try so a transient write error
+  // (e.g. readonly volume) doesn't prevent the user from signing in.
+  try {
+    db.prepare('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?').run(user.id);
+  } catch (err) {
+    // Log but don't fail login
+    console.warn('[users.verifyPassword] could not update last_login_at:', err.message);
+  }
   return getById(user.id);
 }
 
