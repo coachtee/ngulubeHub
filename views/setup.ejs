@@ -5,104 +5,180 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><%= title %></title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-  <link href="/css/app.css" rel="stylesheet">
   <style>
-    :root { --cream: #F5F1EA; --blue: #1F2D5C; --blue-2: #2c3f7a; }
+    :root {
+      --bg: #000000;
+      --glass: rgba(255, 255, 255, 0.04);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --text: #f5f5f7;
+      --text-2: #a1a1aa;
+      --text-3: #71717a;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --accent-glow: rgba(59, 130, 246, 0.4);
+      --warn-bg: rgba(234, 179, 8, 0.08);
+      --warn-text: #fbbf24;
+      --warn-border: rgba(234, 179, 8, 0.2);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
     body {
-      background: var(--cream);
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
       min-height: 100vh;
       display: flex; align-items: center; justify-content: center;
-      padding: 24px 16px; margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      padding: 24px 16px;
+      -webkit-font-smoothing: antialiased;
     }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .auth-shell { position: relative; max-width: 440px; width: 100%; }
     .auth-card {
-      background: #fff;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
       border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(31, 45, 92, 0.10);
-      padding: 44px 36px 36px;
-      max-width: 460px; width: 100%;
-      border: 1px solid #ebe5d8;
+      padding: 40px 32px 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
     }
-    .auth-card .brand { display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
-    .auth-card .brand img { width: 64px; height: 64px; }
-    .auth-card h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px; color: var(--blue); text-align: center; }
-    .auth-card .sub { color: #6b7280; font-size: 13.5px; margin: 0 0 22px; line-height: 1.5; text-align: center; }
-    .auth-card .form-group { margin-bottom: 14px; }
-    .auth-card .form-group label { display: block; font-size: 12px; color: var(--blue); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
-    .auth-card .form-group input, .auth-card .form-group select {
-      width: 100%; padding: 11px 14px; height: 44px;
-      border: 1.5px solid #d8d2c2; border-radius: 8px;
-      font-size: 14px; color: var(--blue);
-      background: #fff; outline: none;
-      transition: border-color 0.12s, box-shadow 0.12s;
+    .auth-card .brand {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-bottom: 6px;
     }
-    .auth-card .form-group input:focus, .auth-card .form-group select:focus {
-      border-color: var(--blue);
-      box-shadow: 0 0 0 3px rgba(31, 45, 92, 0.08);
+    .auth-card .brand img { width: 28px; height: 28px; }
+    .auth-card .brand .word {
+      font-size: 16px; font-weight: 700;
+      color: var(--text);
     }
-    .auth-card .form-group input::placeholder { color: #b8b2a3; }
-    .auth-card .btn-primary {
-      width: 100%; height: 46px; font-size: 14.5px; font-weight: 600;
+    .auth-card h1 {
+      font-size: 22px; font-weight: 600;
+      text-align: center;
+      margin: 22px 0 6px;
+    }
+    .auth-card .sub {
+      text-align: center;
+      color: var(--text-2);
+      font-size: 13px;
+      margin: 0 0 24px;
+      line-height: 1.5;
+    }
+    .auth-card .info {
+      background: var(--warn-bg);
+      color: var(--warn-text);
+      border: 1px solid var(--warn-border);
       border-radius: 8px;
-      background: var(--blue); color: #fff; border: none;
-      cursor: pointer; margin-top: 10px;
-      letter-spacing: 0.3px;
-      transition: background 0.15s;
-    }
-    .auth-card .btn-primary:hover { background: var(--blue-2); }
-    .auth-card .err {
-      background: #fee2e2; color: #991b1b;
-      border-radius: 8px; padding: 10px 12px;
-      font-size: 13px; margin-bottom: 14px;
-    }
-    .auth-card .steps {
-      background: #fef3c7; border: 1px solid #fde68a;
-      border-radius: 8px; padding: 12px 14px;
-      font-size: 12.5px; color: #92400e;
+      padding: 10px 12px;
+      font-size: 12.5px;
       margin-bottom: 18px;
       line-height: 1.5;
     }
+    .auth-card .err {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .auth-card .field { margin-bottom: 14px; }
+    .auth-card label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-2);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .auth-card input {
+      width: 100%;
+      padding: 11px 14px;
+      height: 44px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+    }
+    .auth-card input::placeholder { color: var(--text-3); }
+    .auth-card input:focus {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.05);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .auth-card .btn-primary {
+      width: 100%;
+      height: 44px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: background 0.15s, transform 0.05s, box-shadow 0.15s;
+    }
+    .auth-card .btn-primary:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+    .auth-card .btn-primary:active { transform: translateY(1px); }
     .auth-card .footer {
       margin-top: 22px; padding-top: 14px;
-      border-top: 1px solid #ebe5d8;
-      font-size: 11px; color: #9c9485; text-align: center;
+      border-top: 1px solid var(--glass-border);
+      font-size: 11px;
+      color: var(--text-3);
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="auth-card">
-    <div class="brand">
-      <img src="/img/logo-pig.svg" alt="Ngulube Hub">
-    </div>
-    <h1>Welcome to Ngulube Hub</h1>
-    <p class="sub">No admin account exists yet. Create the first super-admin to get started. This account can add other admins later.</p>
-
-    <div class="steps">
-      <i class="bi bi-info-circle"></i> <strong>One-time setup.</strong> Once created, you can add more admins from the Admin → Users page.
-    </div>
-
-    <% if (error) { %><div class="err"><i class="bi bi-exclamation-triangle"></i> <%= error %></div><% } %>
-
-    <form method="post" action="/setup">
-      <div class="form-group">
-        <label>Your name</label>
-        <input name="name" required autofocus placeholder="e.g. Thabiso">
+  <div class="auth-shell">
+    <div class="auth-card">
+      <div class="brand">
+        <img src="/img/logo-pig.svg" alt="">
+        <span class="word">NgulubeHub</span>
       </div>
-      <div class="form-group">
-        <label>Username</label>
-        <input name="username" required pattern="[a-zA-Z0-9_-]{3,30}" placeholder="lowercase, no spaces">
-      </div>
-      <div class="form-group">
-        <label>Password (min 6 chars)</label>
-        <input name="password" type="password" required minlength="6" placeholder="Pick a strong one">
-      </div>
-      <button type="submit" class="btn-primary"><i class="bi bi-rocket-takeoff"></i> Create super-admin & sign in</button>
-    </form>
+      <h1>Welcome to Ngulube Hub</h1>
+      <p class="sub">No admin account exists yet. Create the first super-admin to get started. This account can add other admins later.</p>
 
-    <div class="footer">
-      © <%= new Date().getFullYear() %> Ngulube Hub
+      <div class="info">
+        <i class="bi bi-info-circle"></i> <strong>One-time setup.</strong> Once created, you can add more admins from the Admin → Users page.
+      </div>
+
+      <% if (error) { %><div class="err"><i class="bi bi-exclamation-triangle"></i> <%= error %></div><% } %>
+
+      <form method="post" action="/setup">
+        <div class="field">
+          <label>Your name</label>
+          <input name="name" required autofocus placeholder="e.g. Thabiso">
+        </div>
+        <div class="field">
+          <label>Username</label>
+          <input name="username" required minlength="3" maxlength="30" placeholder="lowercase, no spaces">
+        </div>
+        <div class="field">
+          <label>Password (min 6 chars)</label>
+          <input name="password" type="password" required minlength="6" placeholder="Pick a strong one">
+        </div>
+        <button type="submit" class="btn-primary"><i class="bi bi-rocket-takeoff"></i> Create super-admin & sign in</button>
+      </form>
+
+      <div class="footer">
+        © <%= new Date().getFullYear() %> Ngulube Hub
+      </div>
     </div>
   </div>
 </body>

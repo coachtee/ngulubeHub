@@ -133,7 +133,7 @@ app.get('/logout', (req, res) => {
 
 app.get('/admin/users', requireAuth, requireSuperadmin, (req, res) => {
   const all = users.listAll();
-  res.render('admin-users', { allUsers: all, title: 'Admin Users — Ngulube Hub' });
+  res.render('admin-users', { allUsers: all, active: 'users', title: 'Admin Users — Ngulube Hub' });
 });
 
 app.post('/admin/users', requireAuth, requireSuperadmin, (req, res) => {
@@ -180,7 +180,8 @@ app.post('/admin/users/:id/password', requireAuth, requireSuperadmin, (req, res)
 
 // ---------- DASHBOARD ROUTES (all require auth) ----------
 
-app.get('/', requireAuth, (req, res) => {
+// Dashboard routes (both / and /dashboard for backward compat with links)
+function dashboardHandler(req, res) {
   const q = (req.query.q || '').trim();
   const sector = (req.query.sector || '').trim();
   const status = (req.query.status || '').trim();
@@ -214,7 +215,9 @@ app.get('/', requireAuth, (req, res) => {
   };
 
   res.render('dashboard', { clients, sectors, statuses, q, sector, status, stats, active: 'dashboard' });
-});
+}
+app.get('/', requireAuth, dashboardHandler);
+app.get('/dashboard', requireAuth, dashboardHandler);
 
 app.get('/clients/new', requireAuth, (req, res) => {
   const sectors = ['Finance', 'Banking', 'Insurance', 'Healthcare', 'IT Services', 'Cybersecurity', 'Construction', 'Engineering', 'Architecture', 'Creative', 'Marketing', 'Real Estate', 'HR Services', 'Telecommunications', 'Accounting', 'Fashion', 'Energy', 'Education', 'Other'];

@@ -40,7 +40,7 @@
     <div class="stat" style="<%= stats.pending > 0 ? 'background: #fefce8; border-color: #fde68a;' : '' %>">
       <span class="label">Pending Review</span>
       <span class="value" style="<%= stats.pending > 0 ? 'color: #ca8a04;' : '' %>"><%= stats.pending %></span>
-      <span class="delta"><%= stats.pending > 0 ? '<a href="/dashboard?status=pending">Review now</a>' : 'no new submissions' %></span>
+      <span class="delta"><%- stats.pending > 0 ? '<a href="/dashboard?status=pending">Review now</a>' : 'no new submissions' %></span>
     </div>
   </div>
 

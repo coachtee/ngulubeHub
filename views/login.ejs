@@ -5,150 +5,222 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><%= title %></title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-  <link href="/css/app.css" rel="stylesheet">
   <style>
-    /* Cream background (#F5F1EA) + everything blue. White logo pops on the cream
-       card, orange snout is the visual accent. "Sign in" button is solid blue. */
     :root {
-      --cream: #F5F1EA;
-      --blue: #1F2D5C;
-      --blue-2: #2c3f7a;
-      --orange: #F26B4A;
+      --bg: #000000;
+      --glass: rgba(255, 255, 255, 0.04);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-hover: rgba(255, 255, 255, 0.06);
+      --text: #f5f5f7;
+      --text-2: #a1a1aa;
+      --text-3: #71717a;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --accent-glow: rgba(59, 130, 246, 0.4);
+      --err: #ef4444;
+      --err-bg: rgba(239, 68, 68, 0.1);
+      --ok: #22c55e;
+      --ok-bg: rgba(34, 197, 94, 0.1);
     }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
     body {
-      background: var(--cream);
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
       min-height: 100vh;
       display: flex; align-items: center; justify-content: center;
-      margin: 0; padding: 24px 16px;
-      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      padding: 24px 16px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
+    /* Subtle radial gradient behind the card for depth */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .auth-shell { position: relative; z-index: 1; max-width: 400px; width: 100%; }
     .auth-card {
-      background: #fff;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
       border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(31, 45, 92, 0.10);
-      padding: 44px 36px 36px;
-      max-width: 400px; width: 100%;
-      border: 1px solid #ebe5d8;
+      padding: 40px 32px 28px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.02) inset, 0 20px 60px rgba(0,0,0,0.4);
     }
-    /* The logo: just the SVG, no "Ngulube Hub" text next to it.
-       Default colors: white face on cream card doesn't work, so we use
-       navy face + orange snout — same as sidebar. */
     .auth-card .brand {
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 24px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-bottom: 6px;
     }
-    .auth-card .brand img {
-      width: 64px; height: 64px;
+    .auth-card .brand img { width: 28px; height: 28px; }
+    .auth-card .brand .word {
+      font-size: 16px; font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.3px;
+    }
+    .auth-card h1 {
+      font-size: 24px; font-weight: 600;
+      color: var(--text);
+      text-align: center;
+      margin: 22px 0 6px;
     }
     .auth-card .sub {
       text-align: center;
-      color: var(--blue);
-      font-size: 14px;
-      font-weight: 500;
-      margin: 0 0 24px;
-      letter-spacing: 0.2px;
+      color: var(--text-2);
+      font-size: 13.5px;
+      margin: 0 0 28px;
     }
+    .auth-card .sub a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .auth-card .sub a:hover { color: var(--accent-hover); }
     .auth-card .err {
-      background: #fee2e2; color: #991b1b;
-      border-radius: 8px; padding: 10px 12px;
-      font-size: 13px; margin-bottom: 16px;
+      background: var(--err-bg);
+      color: var(--err);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 6px;
     }
     .auth-card .ok {
-      background: #dcfce7; color: #166534;
-      border-radius: 8px; padding: 10px 12px;
-      font-size: 13px; margin-bottom: 16px;
+      background: var(--ok-bg);
+      color: var(--ok);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      margin-bottom: 16px;
     }
+    .auth-card .field { margin-bottom: 14px; position: relative; }
     .auth-card label {
-      display: block; font-size: 12px;
-      color: var(--blue); margin-bottom: 6px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      text-transform: uppercase;
+      display: block;
+      font-size: 12px;
+      color: var(--text-2);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .auth-card .field .input-wrap {
+      position: relative;
+    }
+    .auth-card .field .input-wrap i {
+      position: absolute;
+      left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-3);
+      font-size: 15px;
     }
     .auth-card input {
-      width: 100%; padding: 11px 14px; height: 44px;
-      border: 1.5px solid #d8d2c2;
+      width: 100%;
+      padding: 11px 14px 11px 42px;
+      height: 44px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
       border-radius: 8px;
-      font-size: 14px; color: var(--blue);
-      background: #fff;
-      outline: none; transition: border-color 0.12s, box-shadow 0.12s;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
     }
+    .auth-card input::placeholder { color: var(--text-3); }
     .auth-card input:focus {
-      border-color: var(--blue);
-      box-shadow: 0 0 0 3px rgba(31, 45, 92, 0.08);
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.05);
+      box-shadow: 0 0 0 3px var(--accent-glow);
     }
-    .auth-card input::placeholder { color: #b8b2a3; }
-    .auth-card .form-group { margin-bottom: 16px; }
     .auth-card .btn-primary {
-      background: var(--blue); color: #fff;
+      width: 100%;
+      height: 44px;
+      background: var(--accent);
+      color: #fff;
       border: none;
-      width: 100%; height: 46px;
-      padding: 0 16px;
-      font-size: 14.5px; font-weight: 600;
       border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
       margin-top: 8px;
-      letter-spacing: 0.3px;
-      transition: background 0.15s, transform 0.05s;
+      transition: background 0.15s, transform 0.05s, box-shadow 0.15s;
     }
-    .auth-card .btn-primary:hover { background: var(--blue-2); }
+    .auth-card .btn-primary:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
     .auth-card .btn-primary:active { transform: translateY(1px); }
     .auth-card .alt {
-      text-align: center; margin-top: 20px;
-      font-size: 12.5px; color: #6b7280;
+      text-align: center;
+      margin-top: 18px;
+      font-size: 12.5px;
+      color: var(--text-2);
     }
     .auth-card .alt a {
-      color: var(--blue);
-      font-weight: 600;
+      color: var(--text);
       text-decoration: none;
+      font-weight: 500;
     }
-    .auth-card .alt a:hover { text-decoration: underline; }
-    .auth-card .alt .sep { color: #c8c2b3; margin: 0 8px; }
+    .auth-card .alt a:hover { color: var(--accent); }
+    .auth-card .alt .sep { color: var(--text-3); margin: 0 8px; }
     .auth-card .footer {
-      margin-top: 28px; padding-top: 16px;
-      border-top: 1px solid #ebe5d8;
-      font-size: 11px; color: #9c9485;
+      margin-top: 24px; padding-top: 16px;
+      border-top: 1px solid var(--glass-border);
+      font-size: 11px;
+      color: var(--text-3);
       text-align: center;
     }
-    .auth-card .footer a { color: #9c9485; }
   </style>
 </head>
 <body>
-  <div class="auth-card">
-    <div class="brand">
-      <img src="/img/logo-pig.svg" alt="Ngulube Hub">
-    </div>
-    <div class="sub">Sign in to continue</div>
-
-    <% if (typeof error !== 'undefined' && error) { %>
-      <div class="err"><i class="bi bi-exclamation-circle"></i> <%= error %></div>
-    <% } %>
-    <% if (typeof success !== 'undefined' && success) { %>
-      <div class="ok"><i class="bi bi-check-circle"></i> <%= success %></div>
-    <% } %>
-
-    <form method="POST" action="/login">
-      <div class="form-group">
-        <label>Username</label>
-        <input type="text" name="username" autocomplete="username" placeholder="Enter your username" required>
+  <div class="auth-shell">
+    <div class="auth-card">
+      <div class="brand">
+        <img src="/img/logo-pig.svg" alt="">
+        <span class="word">NgulubeHub</span>
       </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" name="password" autocomplete="current-password" placeholder="Enter your password" required>
+      <h1>Welcome Back</h1>
+      <p class="sub">Sign in to continue</p>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="err"><i class="bi bi-exclamation-circle"></i> <%= error %></div>
+      <% } %>
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="ok"><i class="bi bi-check-circle"></i> <%= success %></div>
+      <% } %>
+
+      <form method="POST" action="/login">
+        <div class="field">
+          <label>Username</label>
+          <div class="input-wrap">
+            <i class="bi bi-person"></i>
+            <input type="text" name="username" autocomplete="username" placeholder="Enter your username" required>
+          </div>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <i class="bi bi-lock"></i>
+            <input type="password" name="password" autocomplete="current-password" placeholder="Enter your password" required>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary">Sign in</button>
+      </form>
+
+      <div class="alt">
+        <a href="/join">Join the network</a>
+        <span class="sep">·</span>
+        <a href="/setup">First-time setup</a>
       </div>
-      <button type="submit" class="btn-primary">Sign in</button>
-    </form>
 
-    <div class="alt">
-      <a href="/join">Join the network</a>
-      <span class="sep">·</span>
-      <a href="/setup">First-time setup</a>
-    </div>
-
-    <div class="footer">
-      © <%= new Date().getFullYear() %> Ngulube Hub
+      <div class="footer">
+        © <%= new Date().getFullYear() %> Ngulube Hub
+      </div>
     </div>
   </div>
 </body>

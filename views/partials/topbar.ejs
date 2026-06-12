@@ -1,8 +1,8 @@
 <div class="topbar">
   <button class="icon-btn menu-btn" aria-label="Open menu" type="button"><i class="bi bi-list"></i></button>
-  <div class="greeting">Hi, <%= (typeof user !== 'undefined' && user ? user.username : 'there') %> <span class="wave">👋</span></div>
+  <div class="greeting">Hi, <%= (typeof user !== 'undefined' && user && user.username ? user.username : 'there') %> <span class="wave">👋</span></div>
 
-  <% if (typeof user !== 'undefined' && user) { %>
+  <% if (typeof user !== 'undefined' && user && user.username) { %>
     <form class="search" method="GET" action="/dashboard">
       <i class="bi bi-search"></i>
       <input type="text" name="q" placeholder="Search clients by name, sector, or industry..." value="<%= typeof q !== 'undefined' ? q : '' %>" autocomplete="off">

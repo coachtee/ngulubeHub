@@ -1,0 +1,153 @@
+{
+  "passed": 26,
+  "failed": 2,
+  "total": 28,
+  "results": [
+    {
+      "test": "GET /setup returns 200",
+      "status": "PASS",
+      "note": "got 200"
+    },
+    {
+      "test": "POST /setup redirects to /login",
+      "status": "PASS",
+      "note": "url=http://localhost:3000/login"
+    },
+    {
+      "test": "After setup, /setup redirects to /login",
+      "status": "PASS",
+      "note": "url=http://localhost:3000/login"
+    },
+    {
+      "test": "GET /login returns 200",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Login page shows 'NgulubeHub' wordmark",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Login page shows 'Welcome Back' heading",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Login page shows 'Sign in' button",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Bad creds shows 'Invalid' error",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Login redirects to /",
+      "status": "PASS",
+      "note": "url=http://localhost:3000/"
+    },
+    {
+      "test": "Dashboard shows stats grid (>=3 stat cards)",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Sidebar shows wordmark",
+      "status": "FAIL",
+      "note": "text=''"
+    },
+    {
+      "test": "Client profile loaded",
+      "status": "PASS",
+      "note": "url=http://localhost:3000/clients/16"
+    },
+    {
+      "test": "Profile page has profile-header",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "/join form is public (no login required)",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "/join form submits successfully",
+      "status": "PASS",
+      "note": "url=http://localhost:3000/join"
+    },
+    {
+      "test": "Dashboard shows 'Pending Review' stat",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Filter by status=pending shows the test submission",
+      "status": "PASS",
+      "note": "rows=1"
+    },
+    {
+      "test": "Pending profile shows yellow approval banner",
+      "status": "FAIL",
+      "note": ""
+    },
+    {
+      "test": "Approve moves to Not contacted",
+      "status": "PASS",
+      "note": "status= Not contacted"
+    },
+    {
+      "test": "Catalog has >=5 solution cards",
+      "status": "PASS",
+      "note": "count=21"
+    },
+    {
+      "test": "Admin users page shows users table",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Intro page renders",
+      "status": "PASS",
+      "note": "url=http://localhost:3000/clients/16/intro"
+    },
+    {
+      "test": "New client form loads",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Mobile /login loads",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Mobile login shows wordmark",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Mobile dashboard shows hamburger button",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Hamburger opens sidebar drawer",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Mobile /join form works",
+      "status": "PASS",
+      "note": ""
+    }
+  ],
+  "console_errors": [
+    [
+      "error",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  ]
+}
