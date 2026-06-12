@@ -9,30 +9,75 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <link href="/css/app.css" rel="stylesheet">
   <style>
-    body { background: linear-gradient(135deg, #1F2D5C 0%, #2c3f7a 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .auth-card { background: #fff; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); padding: 40px 36px; max-width: 480px; width: 100%; }
-    .auth-card .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-    .auth-card .brand img { width: 44px; height: 44px; color: #F26B4A; }
-    .auth-card h1 { font-size: 24px; font-weight: 700; margin: 0; color: var(--text); }
-    .auth-card .sub { color: var(--text-2); font-size: 13.5px; margin-top: 8px; margin-bottom: 24px; line-height: 1.5; }
+    :root { --cream: #F5F1EA; --blue: #1F2D5C; --blue-2: #2c3f7a; }
+    body {
+      background: var(--cream);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px 16px; margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    }
+    .auth-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(31, 45, 92, 0.10);
+      padding: 44px 36px 36px;
+      max-width: 460px; width: 100%;
+      border: 1px solid #ebe5d8;
+    }
+    .auth-card .brand { display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+    .auth-card .brand img { width: 64px; height: 64px; }
+    .auth-card h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px; color: var(--blue); text-align: center; }
+    .auth-card .sub { color: #6b7280; font-size: 13.5px; margin: 0 0 22px; line-height: 1.5; text-align: center; }
     .auth-card .form-group { margin-bottom: 14px; }
-    .auth-card .form-group label { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 4px; font-weight: 500; }
-    .auth-card .form-group input, .auth-card .form-group select { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: 6px; font-size: 14px; outline: none; }
-    .auth-card .form-group input:focus, .auth-card .form-group select:focus { border-color: var(--brand); }
-    .auth-card .btn-primary { width: 100%; height: 40px; font-weight: 600; margin-top: 10px; }
-    .auth-card .err { background: var(--red-bg); color: var(--red); border-radius: 6px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; }
-    .auth-card .steps { background: #fef9c3; border: 1px solid #fde68a; border-radius: 6px; padding: 10px 14px; font-size: 12.5px; color: #92400e; margin-bottom: 18px; }
+    .auth-card .form-group label { display: block; font-size: 12px; color: var(--blue); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+    .auth-card .form-group input, .auth-card .form-group select {
+      width: 100%; padding: 11px 14px; height: 44px;
+      border: 1.5px solid #d8d2c2; border-radius: 8px;
+      font-size: 14px; color: var(--blue);
+      background: #fff; outline: none;
+      transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    .auth-card .form-group input:focus, .auth-card .form-group select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(31, 45, 92, 0.08);
+    }
+    .auth-card .form-group input::placeholder { color: #b8b2a3; }
+    .auth-card .btn-primary {
+      width: 100%; height: 46px; font-size: 14.5px; font-weight: 600;
+      border-radius: 8px;
+      background: var(--blue); color: #fff; border: none;
+      cursor: pointer; margin-top: 10px;
+      letter-spacing: 0.3px;
+      transition: background 0.15s;
+    }
+    .auth-card .btn-primary:hover { background: var(--blue-2); }
+    .auth-card .err {
+      background: #fee2e2; color: #991b1b;
+      border-radius: 8px; padding: 10px 12px;
+      font-size: 13px; margin-bottom: 14px;
+    }
+    .auth-card .steps {
+      background: #fef3c7; border: 1px solid #fde68a;
+      border-radius: 8px; padding: 12px 14px;
+      font-size: 12.5px; color: #92400e;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+    .auth-card .footer {
+      margin-top: 22px; padding-top: 14px;
+      border-top: 1px solid #ebe5d8;
+      font-size: 11px; color: #9c9485; text-align: center;
+    }
   </style>
 </head>
 <body>
   <div class="auth-card">
     <div class="brand">
       <img src="/img/logo-pig.svg" alt="Ngulube Hub">
-      <div>
-        <h1>Welcome to Ngulube Hub</h1>
-      </div>
     </div>
-    <div class="sub">No admin account exists yet. Create the first super-admin to get started. This account can add other admins later.</div>
+    <h1>Welcome to Ngulube Hub</h1>
+    <p class="sub">No admin account exists yet. Create the first super-admin to get started. This account can add other admins later.</p>
 
     <div class="steps">
       <i class="bi bi-info-circle"></i> <strong>One-time setup.</strong> Once created, you can add more admins from the Admin → Users page.
@@ -43,7 +88,7 @@
     <form method="post" action="/setup">
       <div class="form-group">
         <label>Your name</label>
-        <input name="name" required autofocus placeholder="e.g. naleli">
+        <input name="name" required autofocus placeholder="e.g. Thabiso">
       </div>
       <div class="form-group">
         <label>Username</label>
@@ -51,10 +96,14 @@
       </div>
       <div class="form-group">
         <label>Password (min 6 chars)</label>
-        <input name="password" type="password" required minlength="6">
+        <input name="password" type="password" required minlength="6" placeholder="Pick a strong one">
       </div>
-      <button class="btn primary"><i class="bi bi-rocket-takeoff"></i> Create super-admin & sign in</button>
+      <button type="submit" class="btn-primary"><i class="bi bi-rocket-takeoff"></i> Create super-admin & sign in</button>
     </form>
+
+    <div class="footer">
+      © <%= new Date().getFullYear() %> Ngulube Hub
+    </div>
   </div>
 </body>
 </html>

@@ -9,62 +9,118 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <link href="/css/app.css" rel="stylesheet">
   <style>
+    /* Cream background (#F5F1EA) + everything blue. White logo pops on the cream
+       card, orange snout is the visual accent. "Sign in" button is solid blue. */
+    :root {
+      --cream: #F5F1EA;
+      --blue: #1F2D5C;
+      --blue-2: #2c3f7a;
+      --orange: #F26B4A;
+    }
     body {
-      background: linear-gradient(135deg, #1F2D5C 0%, #2c3f7a 100%);
+      background: var(--cream);
       min-height: 100vh;
       display: flex; align-items: center; justify-content: center;
       margin: 0; padding: 24px 16px;
       font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
     }
     .auth-card {
-      background: #fff; border-radius: 14px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-      padding: 36px 32px; max-width: 420px; width: 100%;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(31, 45, 92, 0.10);
+      padding: 44px 36px 36px;
+      max-width: 400px; width: 100%;
+      border: 1px solid #ebe5d8;
     }
-    .auth-card .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
-    /* The logo SVG uses currentColor for the snout; we set color: #F26B4A so the
-       snout pops on the white card and the navy face/ears sit nicely. */
-    .auth-card .brand img { width: 44px; height: 44px; color: #F26B4A; }
-    .auth-card .brand .t h1 { font-size: 22px; font-weight: 700; margin: 0; color: var(--brand); }
-    .auth-card .brand .t p { font-size: 13px; color: var(--text-2); margin: 0; }
-    .auth-card .err { background: var(--red-bg); color: var(--red); border-radius: 6px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; }
-    .auth-card .ok { background: var(--green-bg); color: var(--green); border-radius: 6px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; }
-    .auth-card label { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 4px; font-weight: 500; }
+    /* The logo: just the SVG, no "Ngulube Hub" text next to it.
+       Default colors: white face on cream card doesn't work, so we use
+       navy face + orange snout — same as sidebar. */
+    .auth-card .brand {
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 24px;
+    }
+    .auth-card .brand img {
+      width: 64px; height: 64px;
+    }
+    .auth-card .sub {
+      text-align: center;
+      color: var(--blue);
+      font-size: 14px;
+      font-weight: 500;
+      margin: 0 0 24px;
+      letter-spacing: 0.2px;
+    }
+    .auth-card .err {
+      background: #fee2e2; color: #991b1b;
+      border-radius: 8px; padding: 10px 12px;
+      font-size: 13px; margin-bottom: 16px;
+    }
+    .auth-card .ok {
+      background: #dcfce7; color: #166534;
+      border-radius: 8px; padding: 10px 12px;
+      font-size: 13px; margin-bottom: 16px;
+    }
+    .auth-card label {
+      display: block; font-size: 12px;
+      color: var(--blue); margin-bottom: 6px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
     .auth-card input {
-      width: 100%; padding: 9px 12px; height: 40px;
-      border: 1px solid var(--border-strong); border-radius: 6px;
-      font-size: 14px; color: var(--text);
-      outline: none; transition: border-color 0.12s;
+      width: 100%; padding: 11px 14px; height: 44px;
+      border: 1.5px solid #d8d2c2;
+      border-radius: 8px;
+      font-size: 14px; color: var(--blue);
+      background: #fff;
+      outline: none; transition: border-color 0.12s, box-shadow 0.12s;
     }
-    .auth-card input:focus { border-color: var(--brand); }
-    .auth-card .form-group { margin-bottom: 14px; }
+    .auth-card input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(31, 45, 92, 0.08);
+    }
+    .auth-card input::placeholder { color: #b8b2a3; }
+    .auth-card .form-group { margin-bottom: 16px; }
     .auth-card .btn-primary {
-      background: var(--brand); color: #fff; border: none;
-      width: 100%; padding: 11px; font-size: 14px; font-weight: 500;
-      border-radius: 6px; cursor: pointer; margin-top: 6px;
+      background: var(--blue); color: #fff;
+      border: none;
+      width: 100%; height: 46px;
+      padding: 0 16px;
+      font-size: 14.5px; font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 8px;
+      letter-spacing: 0.3px;
+      transition: background 0.15s, transform 0.05s;
     }
-    .auth-card .btn-primary:hover { background: var(--brand-2); }
+    .auth-card .btn-primary:hover { background: var(--blue-2); }
+    .auth-card .btn-primary:active { transform: translateY(1px); }
     .auth-card .alt {
-      text-align: center; margin-top: 18px;
-      font-size: 12.5px; color: var(--text-2);
+      text-align: center; margin-top: 20px;
+      font-size: 12.5px; color: #6b7280;
     }
-    .auth-card .alt a { color: var(--brand); }
+    .auth-card .alt a {
+      color: var(--blue);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .auth-card .alt a:hover { text-decoration: underline; }
+    .auth-card .alt .sep { color: #c8c2b3; margin: 0 8px; }
     .auth-card .footer {
-      margin-top: 24px; padding-top: 16px;
-      border-top: 1px solid var(--border);
-      font-size: 11px; color: var(--text-3); text-align: center;
+      margin-top: 28px; padding-top: 16px;
+      border-top: 1px solid #ebe5d8;
+      font-size: 11px; color: #9c9485;
+      text-align: center;
     }
+    .auth-card .footer a { color: #9c9485; }
   </style>
 </head>
 <body>
   <div class="auth-card">
     <div class="brand">
       <img src="/img/logo-pig.svg" alt="Ngulube Hub">
-      <div class="t">
-        <h1>Ngulube Hub</h1>
-        <p><%= typeof subtitle !== 'undefined' ? subtitle : 'Sign in to continue' %></p>
-      </div>
     </div>
+    <div class="sub">Sign in to continue</div>
 
     <% if (typeof error !== 'undefined' && error) { %>
       <div class="err"><i class="bi bi-exclamation-circle"></i> <%= error %></div>
@@ -76,21 +132,23 @@
     <form method="POST" action="/login">
       <div class="form-group">
         <label>Username</label>
-        <input type="text" name="username" autocomplete="username" required>
+        <input type="text" name="username" autocomplete="username" placeholder="Enter your username" required>
       </div>
       <div class="form-group">
         <label>Password</label>
-        <input type="password" name="password" autocomplete="current-password" required>
+        <input type="password" name="password" autocomplete="current-password" placeholder="Enter your password" required>
       </div>
       <button type="submit" class="btn-primary">Sign in</button>
     </form>
 
     <div class="alt">
-      Don't have access? <a href="/join">Join the network</a> · <a href="/setup">First-time setup</a>
+      <a href="/join">Join the network</a>
+      <span class="sep">·</span>
+      <a href="/setup">First-time setup</a>
     </div>
 
     <div class="footer">
-      © <%= new Date().getFullYear() %> Ngulube Hub · <a href="https://github.com/coachtee/ngulubeHub" style="color: var(--text-3);">MIT</a>
+      © <%= new Date().getFullYear() %> Ngulube Hub
     </div>
   </div>
 </body>
