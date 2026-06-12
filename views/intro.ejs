@@ -1,0 +1,88 @@
+<% const title = 'Intro Brief — ' + client.name; %>
+<%- include('partials/head', { title }) %>
+<style>
+  .intro-page { max-width: 800px; margin: 0 auto; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 48px 56px; box-shadow: var(--shadow-md); }
+  .intro-page h1 { font-size: 30px; color: var(--brand); margin-top: 4px; }
+  .intro-page h2 { font-size: 17px; margin-top: 28px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+  .intro-page h3 { font-size: 14px; margin-top: 14px; margin-bottom: 4px; }
+  .intro-page .meta { color: var(--text-3); font-size: 12px; }
+  .intro-page .sig { margin-top: 36px; padding-top: 20px; border-top: 2px solid var(--brand); }
+  .intro-page .total-z { display: inline-block; margin-top: 12px; padding: 10px 14px; background: var(--green-bg); color: var(--green); border-radius: 6px; font-weight: 500; }
+  .intro-page .num-sol { padding: 12px 0; border-bottom: 1px dashed var(--border); }
+  .intro-page .num-sol:last-child { border-bottom: none; }
+  .intro-page .no-print { display: block; }
+  @media print {
+    .intro-page { box-shadow: none; border: none; padding: 0; }
+    .no-print { display: none !important; }
+    body { background: #fff !important; }
+  }
+</style>
+
+<div class="no-print" style="display: flex; justify-content: space-between; max-width: 800px; margin: 0 auto 12px;">
+  <a href="/clients/<%= client.id %>" class="btn"><i class="bi bi-arrow-left"></i> Back to profile</a>
+  <div>
+    <button class="btn primary" onclick="window.print()"><i class="bi bi-printer"></i> Print / Save as PDF</button>
+    <form method="post" action="/clients/<%= client.id %>/mark-intro-sent" style="display: inline-block;">
+      <button class="btn accent" onclick="return confirm('Mark this intro as sent?')"><i class="bi bi-send-check"></i> Mark as Sent</button>
+    </form>
+  </div>
+</div>
+
+<div class="intro-page">
+  <header class="d-flex justify-between items-start" style="padding-bottom: 16px; border-bottom: 2px solid var(--brand);">
+    <div>
+      <div class="meta" style="letter-spacing: 1px; text-transform: uppercase; font-size: 11px;">CLIENTHUB · Personalised Introduction</div>
+      <h1 class="fw-6" style="margin-bottom: 0;">Hello <%= firstName %>,</h1>
+      <div class="meta mt-2">Prepared for <strong style="color: var(--text);"><%= client.name %></strong> · <%= client.title %><%= client.company ? ', ' + client.company : '' %></div>
+      <div class="meta">Generated <%= generatedAt %></div>
+    </div>
+    <i class="bi bi-stars" style="font-size: 28px; color: var(--brand);"></i>
+  </header>
+
+  <section>
+    <p style="font-size: 16px; color: var(--text-2); margin-top: 18px;"><%= hook %></p>
+  </section>
+
+  <h2 class="fw-6">What I noticed about your work</h2>
+  <p>You operate in <strong><%= client.industry || client.sector %></strong><%= client.sub_industry ? ' — ' + client.sub_industry : '' %>, where the leaders we work with consistently tell us the same three things:</p>
+  <% if ((client.pain_points || []).length) { %>
+    <ol style="padding-left: 20px; line-height: 1.7;">
+      <% client.pain_points.slice(0, 4).forEach(p => { %><li><%= p %></li><% }) %>
+    </ol>
+  <% } %>
+
+  <h2 class="fw-6">Where we can help</h2>
+  <p>Based on your focus areas and the kind of work you do, here are the AI solutions where we see the strongest fit — and where teams like yours typically see the fastest ROI:</p>
+
+  <% matches.forEach((m, idx) => { %>
+    <div class="num-sol">
+      <h3 class="fw-6"><%= idx + 1 %>. <%= m.name %></h3>
+      <% if (m.category) { %><div class="meta" style="margin-bottom: 4px;"><i class="bi bi-bookmark"></i> <%= m.category %></div><% } %>
+      <p style="margin: 0; color: var(--text-2);"><%= m.description %></p>
+      <% if (m.est_value) { %><div style="margin-top: 6px; font-size: 13px;"><strong>Indicative investment:</strong> <span class="pill outline" style="font-size: 11px;"><%= m.est_value %></span></div><% } %>
+    </div>
+  <% }) %>
+
+  <% if (totalLow > 0) { %>
+    <div class="total-z">
+      <strong>Indicative first-year range:</strong> ZAR <%= (totalLow/1000).toFixed(0) %>k – <%= (totalHigh/1000).toFixed(0) %>k
+      <span style="font-weight: normal; color: var(--text-2); margin-left: 4px;">(setup + 12 months support. Tailored to your scope.)</span>
+    </div>
+  <% } %>
+
+  <h2 class="fw-6">A 30-minute next step</h2>
+  <p>I won't pitch you a deck. I'd rather use 30 minutes to:</p>
+  <ul style="line-height: 1.7;">
+    <li>Walk through <strong>1–2 of the solutions above</strong> with a real demo, not slides.</li>
+    <li>Identify <strong>one quick win</strong> you could ship in 2–4 weeks that pays for the engagement.</li>
+    <li>Be honest about where AI is <em>not</em> the right answer for your situation.</li>
+  </ul>
+  <p>If any of that resonates, just reply to this note with two or three times that work for you in the next two weeks — I'll send a calendar link.</p>
+
+  <div class="sig">
+    <p class="mb-1 fw-6">— [Your name]</p>
+    <p class="meta mb-0">[Your title] · [Phone] · [Email] · [Website]</p>
+  </div>
+</div>
+
+<%- include('partials/foot') %>

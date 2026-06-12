@@ -1,0 +1,7 @@
+<!-- Logo variant: pig-nose inspired. Two nostril dots inside a rounded shape. Super minimal. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#1F2D5C"/>
+  <ellipse cx="32" cy="34" rx="18" ry="14" fill="#F26B4A"/>
+  <ellipse cx="25" cy="34" rx="3.2" ry="4.5" fill="#1F2D5C"/>
+  <ellipse cx="39" cy="34" rx="3.2" ry="4.5" fill="#1F2D5C"/>
+</svg>

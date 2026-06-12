@@ -1,0 +1,41 @@
+<% const title = 'AI Solutions Catalog — NgulubeHub'; const active = 'catalog'; %>
+<%- include('partials/head', { title, active }) %>
+<%- include('partials/nav') %>
+
+  <header class="d-flex flex-wrap justify-between items-center mb-3">
+    <div>
+      <h1 style="font-size: 22px; font-weight: 700; margin: 0;"><i class="bi bi-stars" style="color: var(--brand);"></i> AI Solutions We Offer</h1>
+      <p class="text-muted mb-0" style="font-size: 13px; margin-top: 2px;">Master menu. We match these to each client's industry and pain points.</p>
+    </div>
+  </header>
+
+  <div class="filterbar">
+    <div class="search-inline" style="max-width: none; flex: 1;">
+      <i class="bi bi-search"></i>
+      <input id="catSearch" placeholder="Filter by name, category, or industry…">
+    </div>
+    <div class="right">
+      <span class="text-muted" style="font-size: 12px;"><%= catalog.length %> solutions</span>
+    </div>
+  </div>
+
+  <% const grouped = catalog.reduce((acc, c) => { (acc[c.category] = acc[c.category] || []).push(c); return acc; }, {}); %>
+  <% Object.keys(grouped).sort().forEach(cat => { %>
+    <div class="cat-section" data-cat="<%= cat.toLowerCase() %>">
+      <h4><i class="bi bi-bookmark-fill"></i> <%= cat %> <span class="text-muted" style="font-weight: normal; font-size: 12px;">(<%= grouped[cat].length %>)</span></h4>
+      <div class="cat-grid">
+        <% grouped[cat].forEach(c => { %>
+          <div class="cat-card" data-name="<%= c.name.toLowerCase() %>" data-inds="<%= (c.industries || []).join(' ').toLowerCase() %>">
+            <h6><%= c.name %></h6>
+            <p><%= c.description %></p>
+            <div class="inds">
+              <% (c.industries || []).slice(0, 4).forEach(i => { %><span class="tag"><%= i %></span><% }) %>
+              <% if ((c.industries || []).length > 4) { %><span class="text-muted" style="font-size: 11px;">+<%= (c.industries || []).length - 4 %></span><% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  <% }) %>
+
+<%- include('partials/foot') %>

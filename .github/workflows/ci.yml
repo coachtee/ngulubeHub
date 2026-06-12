@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint + smoke test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Seed database
+        run: node db/seed.js
+
+      - name: Start server
+        run: |
+          node server.js &
+          SERVER_PID=$!
+          sleep 2
+          echo "PID: $SERVER_PID"
+
+      - name: Smoke test — public routes
+        run: |
+          set -e
+          echo "--- /health ---"
+          curl -fsS http://localhost:3000/health
+          echo
+          echo "--- /login (public) ---"
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/login)" = "200"
+          echo "--- /setup (public) ---"
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/setup)" = "200"
+          echo "--- / (should redirect to /login) ---"
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/)" = "302"
+          echo "--- /clients/1 (should redirect) ---"
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/clients/1)" = "302"
+          echo "--- /admin/users (should redirect) ---"
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/admin/users)" = "302"
+
+      - name: End-to-end auth flow
+        run: |
+          set -e
+          COOKIE=/tmp/ci-cookies
+          rm -f $COOKIE
+
+          echo "--- Create super-admin via /setup ---"
+          curl -s -c $COOKIE -X POST \
+            -d "name=ci-admin&username=ci-admin&password=Ci-test-pw-2026" \
+            -o /dev/null -w "POST /setup => %{http_code}\n" \
+            http://localhost:3000/setup
+
+          echo "--- Login as super-admin ---"
+          curl -s -c $COOKIE -X POST \
+            -d "username=ci-admin&password=Ci-test-pw-2026" \
+            -o /dev/null -w "POST /login => %{http_code}\n" \
+            http://localhost:3000/login
+
+          echo "--- Hit protected routes with cookie ---"
+          for path in / /clients/1 /clients/5 /clients/5/intro /catalog /clients/new /admin/users; do
+            code=$(curl -s -b $COOKIE -o /dev/null -w "%{http_code}" http://localhost:3000$path)
+            test "$code" = "200" || { echo "FAIL: GET $path => $code"; exit 1; }
+            echo "  $path => $code ✓"
+          done
+
+          echo "--- Add a second admin ---"
+          curl -s -b $COOKIE -X POST \
+            -d "name=Test+Admin&username=test-admin&password=Test-pw-2026&role=admin" \
+            -o /dev/null -w "POST /admin/users => %{http_code}\n" \
+            http://localhost:3000/admin/users
+
+          echo "--- Verify second admin can log in ---"
+          rm -f /tmp/test-cookies
+          curl -s -c /tmp/test-cookies -X POST \
+            -d "username=test-admin&password=Test-pw-2026" \
+            -o /dev/null -w "Login as test-admin => %{http_code}\n" \
+            http://localhost:3000/login
+          test "$(curl -s -b /tmp/test-cookies -o /dev/null -w '%{http_code}' http://localhost:3000/)" = "200"
+          test "$(curl -s -b /tmp/test-cookies -o /dev/null -w '%{http_code}' http://localhost:3000/admin/users)" = "403"
+
+          echo "--- Verify AI solutions matched on intro page ---"
+          curl -s -b $COOKIE http://localhost:3000/clients/5/intro > /tmp/intro.html
+          test "$(grep -c 'Indicative first-year range' /tmp/intro.html)" = "1" || { echo "FAIL: Indicative range missing"; exit 1; }
+          echo "  Indicative range present ✓"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          pkill -f "node server.js" || true

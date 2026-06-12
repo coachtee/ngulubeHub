@@ -1,0 +1,164 @@
+<% const title = client.name + ' — NgulubeHub'; const active = 'dashboard'; %>
+<%- include('partials/head', { title, active }) %>
+<%- include('partials/nav') %>
+
+  <% const initials = client.name.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase(); %>
+  <% const statusColor = {
+    'Not contacted': 'yellow', 'Intro sent': 'blue', 'Meeting scheduled': 'blue',
+    'Engaged': 'green', 'Won': 'green', 'Lost': 'gray', 'On hold': 'gray'
+  }[client.intro_status] || 'gray'; %>
+
+  <div class="profile-header">
+    <div class="avatar lg" style="width: 56px; height: 56px; font-size: 20px;"><%= initials %></div>
+    <div class="who">
+      <a href="/" class="text-muted" style="font-size: 12px;"><i class="bi bi-arrow-left"></i> All clients</a>
+      <div class="name" style="margin-top: 2px;"><%= client.name %></div>
+      <div class="title"><%= client.title %><%= client.company ? ' · ' + client.company : '' %></div>
+      <div class="meta-row">
+        <% if (client.sector) { %><span class="badge-mini sector"><%= client.sector %></span><% } %>
+        <% if (client.industry) { %><span class="badge-mini industry"><%= client.industry %></span><% } %>
+        <% if (client.sub_industry) { %><span class="badge-mini industry"><%= client.sub_industry %></span><% } %>
+        <% if (client.region) { %><span class="badge-mini industry"><i class="bi bi-geo-alt"></i> <%= client.region %></span><% } %>
+        <span class="pill <%= statusColor %>"><span class="dot"></span> <%= client.intro_status %></span>
+      </div>
+    </div>
+    <div class="actions">
+      <a href="/clients/<%= client.id %>/intro" target="_blank" class="btn primary"><i class="bi bi-file-earmark-text"></i> Generate Intro</a>
+      <form method="post" action="/clients/<%= client.id %>/mark-intro-sent" class="d-inline">
+        <button type="submit" class="btn" onclick="return confirm('Mark intro as sent and log an interaction?')"><i class="bi bi-send-check"></i> Mark Sent</button>
+      </form>
+      <a href="/clients/<%= client.id %>/edit" class="btn"><i class="bi bi-pencil"></i></a>
+      <form method="post" action="/clients/<%= client.id %>/delete" class="d-inline" onsubmit="return confirm('Delete this client permanently?')">
+        <button class="btn danger icon-only"><i class="bi bi-trash"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <div class="profile-page">
+    <!-- LEFT COLUMN -->
+    <div>
+      <div class="panel">
+        <div class="panel-head"><i class="bi bi-person-vcard"></i> Profile</div>
+        <div class="panel-body">
+          <p class="mb-0"><%= client.bio || '—' %></p>
+          <% if (client.website) { %>
+            <p class="mt-2 mb-0" style="font-size: 13px;"><i class="bi bi-link-45deg"></i> <a href="https://<%= client.website.replace(/^https?:\/\//, '') %>" target="_blank"><%= client.website %></a></p>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><i class="bi bi-bullseye"></i> Focus Areas</div>
+        <div class="panel-body">
+          <% if ((client.focus_areas || []).length) { %>
+            <ul class="bullet-list">
+              <% client.focus_areas.forEach(f => { %><li><%= f %></li><% }) %>
+            </ul>
+          <% } else { %><p class="text-muted mb-0">No focus areas recorded.</p><% } %>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head" style="color: var(--orange);"><i class="bi bi-exclamation-triangle"></i> Pain Points We Can Solve</div>
+        <div class="panel-body">
+          <% if ((client.pain_points || []).length) { %>
+            <ul class="bullet-list">
+              <% client.pain_points.forEach(p => { %><li><%= p %></li><% }) %>
+            </ul>
+          <% } else { %><p class="text-muted mb-0">No pain points recorded.</p><% } %>
+        </div>
+      </div>
+
+      <% if ((client.tags || []).length) { %>
+        <div class="panel">
+          <div class="panel-head"><i class="bi bi-tags"></i> Tags</div>
+          <div class="panel-body">
+            <% client.tags.forEach(t => { %><span class="tag">#<%= t %></span><% }) %>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (client.notes) { %>
+        <div class="panel">
+          <div class="panel-head"><i class="bi bi-journal-text"></i> Notes</div>
+          <div class="panel-body">
+            <p class="mb-0" style="white-space: pre-wrap;"><%= client.notes %></p>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div>
+      <div class="panel">
+        <div class="panel-head">
+          <i class="bi bi-stars" style="color: var(--brand);"></i> AI Solutions We Can Offer
+          <span class="badge-mini count" style="margin-left: auto;"><%= (client.ai_solutions || []).length %></span>
+        </div>
+        <div class="panel-body">
+          <% if ((client.ai_solutions || []).length === 0) { %>
+            <p class="text-muted mb-0" style="font-size: 13px;">No solutions matched yet. <a href="/clients/<%= client.id %>/edit">Edit profile</a>.</p>
+          <% } %>
+          <% (client.ai_solutions || []).forEach((s) => { %>
+            <div class="sol-card">
+              <div class="sol-name">
+                <span><%= s.name %></span>
+                <% if (s.est_value) { %><span class="badge-mini count" style="background: var(--green-bg); color: var(--green);"><%= s.est_value %></span><% } %>
+              </div>
+              <% if (s.why) { %><div class="sol-desc"><%= s.why %></div><% } %>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><i class="bi bi-telephone"></i> Contact</div>
+        <div class="panel-body">
+          <% if (client.contact_email) { %><p class="mb-1" style="font-size: 13px;"><i class="bi bi-envelope"></i> <a href="mailto:<%= client.contact_email %>"><%= client.contact_email %></a></p><% } %>
+          <% if (client.contact_phone) { %><p class="mb-1" style="font-size: 13px;"><i class="bi bi-phone"></i> <%= client.contact_phone %></p><% } %>
+          <% if (!client.contact_email && !client.contact_phone) { %><p class="text-muted mb-0" style="font-size: 13px;">No contact info yet — add via edit.</p><% } %>
+        </div>
+      </div>
+
+      <div class="panel" id="interactions">
+        <div class="panel-head"><i class="bi bi-chat-square-text"></i> Activity Log</div>
+        <div class="panel-body">
+          <form method="post" action="/clients/<%= client.id %>/interactions" class="mb-3">
+            <div class="d-flex gap-1 mb-2">
+              <select name="type" class="form-control" style="flex: 1;">
+                <option value="note">Note</option>
+                <option value="call">Call</option>
+                <option value="email">Email</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="meeting">Meeting</option>
+              </select>
+              <select name="new_status" class="form-control" style="flex: 1;">
+                <option value="">— Status —</option>
+                <option>Not contacted</option>
+                <option>Intro sent</option>
+                <option>Meeting scheduled</option>
+                <option>Engaged</option>
+                <option>Won</option>
+                <option>Lost</option>
+                <option>On hold</option>
+              </select>
+            </div>
+            <textarea name="summary" class="form-control mb-2" rows="2" placeholder="Quick note about the interaction…" required></textarea>
+            <button class="btn primary" style="width: 100%;"><i class="bi bi-plus-circle"></i> Log Activity</button>
+          </form>
+
+          <% if (interactions.length === 0) { %>
+            <p class="text-muted mb-0" style="font-size: 13px;">No activity logged yet.</p>
+          <% } %>
+          <% interactions.forEach(i => { %>
+            <div class="act-item">
+              <div class="meta"><i class="bi bi-clock"></i> <%= i.created_at.slice(0,16).replace('T',' ') %> · <strong><%= i.type %></strong></div>
+              <div class="body"><%= i.summary %></div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<%- include('partials/foot') %>

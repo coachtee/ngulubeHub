@@ -1,0 +1,170 @@
+<% const title = 'NgulubeHub — Dashboard'; const active = 'dashboard'; %>
+<%- include('partials/head', { title, active }) %>
+<%- include('partials/nav') %>
+
+  <header class="d-flex flex-wrap justify-between items-center mb-3">
+    <div>
+      <h1 style="font-size: 22px; font-weight: 700; margin: 0;">Business Clients</h1>
+      <p class="text-muted mb-0" style="font-size: 13px; margin-top: 2px;">Your growing network of founders, advisors, and operators.</p>
+    </div>
+  </header>
+
+  <!-- Stats strip -->
+  <div class="stats">
+    <div class="stat">
+      <span class="label">Total Clients</span>
+      <span class="value"><%= stats.total %></span>
+      <span class="delta">across <%= stats.sectors %> sectors</span>
+    </div>
+    <div class="stat warn">
+      <span class="label">Not Yet Contacted</span>
+      <span class="value"><%= stats.notContacted %></span>
+      <span class="delta">August targets</span>
+    </div>
+    <div class="stat good">
+      <span class="label">In Motion</span>
+      <span class="value"><%= stats.contacted %></span>
+      <span class="delta up">↗ active conversations</span>
+    </div>
+    <div class="stat">
+      <span class="label">AI Solutions Matched</span>
+      <span class="value"><%= clients.reduce((s,c) => s + (c.ai_solutions||[]).length, 0) %></span>
+      <span class="delta">across all profiles</span>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <form class="filterbar" method="get" action="/">
+    <div class="search-inline">
+      <i class="bi bi-search"></i>
+      <input name="q" placeholder="Search by name, company, focus area, tag…" value="<%= q %>">
+    </div>
+    <span class="filter-label">Sector</span>
+    <select name="sector">
+      <option value="">All</option>
+      <% sectors.forEach(s => { %>
+        <option value="<%= s %>" <%= sector === s ? 'selected' : '' %>><%= s %></option>
+      <% }) %>
+    </select>
+    <span class="filter-label">Status</span>
+    <select name="status">
+      <option value="">All</option>
+      <% statuses.forEach(s => { %>
+        <option value="<%= s %>" <%= status === s ? 'selected' : '' %>><%= s %></option>
+      <% }) %>
+    </select>
+    <div class="right">
+      <button class="btn" type="submit"><i class="bi bi-funnel"></i> Filter</button>
+      <% if (q || sector || status) { %>
+        <a class="btn ghost" href="/">Clear</a>
+      <% } %>
+    </div>
+  </form>
+
+  <!-- Table card -->
+  <div class="table-card">
+    <div class="table-toolbar">
+      <span class="selection-info"><strong><%= clients.length %></strong> client<%= clients.length === 1 ? '' : 's' %><% if (q || sector || status) { %> matching filters<% } %></span>
+      <div class="right">
+        <span class="text-muted" style="font-size: 12px;">Sort by:</span>
+        <button type="button" class="btn sm ghost">Name <i class="bi bi-chevron-down"></i></button>
+        <button type="button" class="btn sm ghost">Status <i class="bi bi-chevron-down"></i></button>
+        <button type="button" class="btn sm ghost">Sector <i class="bi bi-chevron-down"></i></button>
+      </div>
+    </div>
+
+    <% if (clients.length === 0) { %>
+      <div class="empty">
+        <i class="bi bi-inbox"></i>
+        <div class="t">No clients match your filters</div>
+        <div class="s">Try clearing filters or adding a new client.</div>
+      </div>
+    <% } else { %>
+      <table class="t">
+        <thead>
+          <tr>
+            <th style="width: 32px;"><input type="checkbox" class="row-check"></th>
+            <th class="sortable">Name <span class="sort">↕</span></th>
+            <th class="sortable">Sector <span class="sort">↕</span></th>
+            <th>Focus</th>
+            <th class="sortable">Status <span class="sort">↕</span></th>
+            <th>AI Solutions</th>
+            <th>Updated</th>
+            <th style="text-align: right; padding-right: 16px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% clients.forEach(c => {
+            const initials = c.name.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
+            const statusMap = {
+              'Not contacted': 'yellow',
+              'Intro sent': 'blue',
+              'Meeting scheduled': 'blue',
+              'Engaged': 'green',
+              'Won': 'green',
+              'Lost': 'gray',
+              'On hold': 'gray',
+            };
+            const statusColor = statusMap[c.intro_status] || 'gray';
+          %>
+            <tr>
+              <td><input type="checkbox" class="row-check"></td>
+              <td>
+                <div class="avatar-row">
+                  <div class="avatar"><%= initials %></div>
+                  <div class="meta">
+                    <a href="/clients/<%= c.id %>" class="n" style="color: var(--text); text-decoration: none;"><%= c.name %></a>
+                    <span class="s"><%= c.title %><%= c.company ? ' · ' + c.company : '' %></span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge-mini sector"><%= c.sector || '—' %></span>
+                <% if (c.industry) { %><span class="sub"><%= c.industry %></span><% } %>
+              </td>
+              <td>
+                <% (c.focus_areas || []).slice(0, 2).forEach(f => { %>
+                  <span class="tag"><%= f.length > 24 ? f.slice(0, 22) + '…' : f %></span>
+                <% }) %>
+                <% if ((c.focus_areas || []).length > 2) { %>
+                  <span class="text-muted" style="font-size: 11px;">+<%= (c.focus_areas || []).length - 2 %></span>
+                <% } %>
+              </td>
+              <td>
+                <span class="pill <%= statusColor %>">
+                  <span class="dot"></span>
+                  <%= c.intro_status %>
+                </span>
+              </td>
+              <td>
+                <% if ((c.ai_solutions || []).length > 0) { %>
+                  <span class="badge-mini count"><i class="bi bi-stars"></i> <%= c.ai_solutions.length %> matched</span>
+                <% } else { %>
+                  <span class="text-muted" style="font-size: 12px;">—</span>
+                <% } %>
+              </td>
+              <td class="mono"><%= c.updated_at ? c.updated_at.slice(0, 10) : c.created_at.slice(0, 10) %></td>
+              <td>
+                <div class="row-actions">
+                  <a href="/clients/<%= c.id %>" class="btn sm ghost" title="View"><i class="bi bi-eye"></i></a>
+                  <a href="/clients/<%= c.id %>/intro" target="_blank" class="btn sm ghost" title="Generate intro"><i class="bi bi-file-earmark-text"></i></a>
+                  <a href="/clients/<%= c.id %>/edit" class="btn sm ghost" title="Edit"><i class="bi bi-pencil"></i></a>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <span>Showing 1–<%= clients.length %> of <%= clients.length %></span>
+        <div class="pages">
+          <button class="page-btn" disabled><i class="bi bi-chevron-left"></i></button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn" disabled><i class="bi bi-chevron-right"></i></button>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+<%- include('partials/foot') %>

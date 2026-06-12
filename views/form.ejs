@@ -1,0 +1,118 @@
+<% const title = (client ? 'Edit ' + client.name : 'Add Client') + ' — NgulubeHub'; const active = client ? 'dashboard' : 'add'; %>
+<%- include('partials/head', { title, active }) %>
+<%- include('partials/nav') %>
+
+  <a href="<%= client ? '/clients/' + client.id : '/' %>" class="text-muted" style="font-size: 12px;"><i class="bi bi-arrow-left"></i> Back</a>
+  <h1 style="font-size: 22px; font-weight: 700; margin: 6px 0 18px;">
+    <i class="bi bi-<%= client ? 'pencil' : 'person-plus' %>"></i> <%= client ? 'Edit ' + client.name : 'Add a New Client' %>
+  </h1>
+
+  <% if (error) { %><div class="alert alert-danger"><%= error %></div><% } %>
+
+  <form method="post" action="<%= client ? '/clients/' + client.id : '/clients' %>" class="panel">
+    <div class="panel-body" style="padding: 20px 24px;">
+
+      <div class="form-section-title">Identity</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Full name *</label>
+          <input name="name" required value="<%= client ? client.name : '' %>" placeholder="e.g. Teddy Sibuyi">
+        </div>
+        <div class="form-group">
+          <label>Title / role</label>
+          <input name="title" value="<%= client ? client.title : '' %>" placeholder="e.g. Financial Planner">
+        </div>
+        <div class="form-group">
+          <label>Company</label>
+          <input name="company" value="<%= client ? client.company : '' %>">
+        </div>
+        <div class="form-group">
+          <label>Website</label>
+          <input name="website" value="<%= client ? client.website : '' %>" placeholder="www.example.co.za">
+        </div>
+      </div>
+
+      <div class="form-section-title">Classification</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Sector</label>
+          <select name="sector" id="sectorSelect">
+            <option value="">— Select —</option>
+            <% sectors.forEach(s => { %>
+              <option value="<%= s %>" <%= (client && client.sector === s) ? 'selected' : '' %>><%= s %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Industry</label>
+          <input name="industry" value="<%= client ? client.industry : '' %>" placeholder="e.g. Financial Advisory">
+        </div>
+        <div class="form-group">
+          <label>Sub-industry / niche</label>
+          <input name="sub_industry" value="<%= client ? client.sub_industry : '' %>" placeholder="e.g. Wealth & Estate">
+        </div>
+        <div class="form-group">
+          <label>Region</label>
+          <input name="region" value="<%= client ? (client.region || 'South Africa') : 'South Africa' %>">
+        </div>
+        <div class="form-group">
+          <label>Source</label>
+          <input name="source" value="<%= client ? (client.source || '') : 'Direct add' %>" placeholder="e.g. Business Network Group">
+        </div>
+        <div class="form-group">
+          <label>Intro status</label>
+          <select name="intro_status">
+            <% ['Not contacted','Intro sent','Meeting scheduled','Engaged','Won','Lost','On hold'].forEach(s => { %>
+              <option <%= (client && client.intro_status === s) ? 'selected' : '' %>><%= s %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-section-title">Profile</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Bio</label>
+          <textarea name="bio" rows="3" placeholder="Short professional bio…"><%= client ? client.bio : '' %></textarea>
+        </div>
+        <div class="form-group">
+          <label>Focus areas (one per line)</label>
+          <textarea name="focus_areas" rows="5" placeholder="Retirement planning&#10;Investment planning&#10;Tax-efficient structuring"><%= client && client.focus_areas ? client.focus_areas.join('\n') : '' %></textarea>
+        </div>
+        <div class="form-group">
+          <label>Pain points (one per line)</label>
+          <textarea name="pain_points" rows="5" placeholder="Repetitive fact-find and plan-drafting&#10;KYC/AML is manual&#10;…"><%= client && client.pain_points ? client.pain_points.join('\n') : '' %></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Tags (comma separated)</label>
+          <input name="tags" value="<%= client && client.tags ? client.tags.join(', ') : '' %>" placeholder="finance, advisory, wealth">
+        </div>
+      </div>
+
+      <div class="form-section-title">Contact</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="contact_email" value="<%= client ? client.contact_email : '' %>">
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input name="contact_phone" value="<%= client ? client.contact_phone : '' %>">
+        </div>
+      </div>
+
+      <div class="form-section-title">Notes (private, internal)</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <textarea name="notes" rows="3"><%= client ? client.notes : '' %></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="<%= client ? '/clients/' + client.id : '/' %>" class="btn ghost">Cancel</a>
+        <button class="btn primary"><i class="bi bi-save"></i> <%= client ? 'Save Changes' : 'Create Client' %></button>
+      </div>
+    </div>
+  </form>
+
+<%- include('partials/foot') %>
