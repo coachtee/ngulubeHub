@@ -1,6 +1,10 @@
 <% const title = 'AI Solutions Catalog — NgulubeHub'; const active = 'catalog'; %>
 <%- include('partials/head', { title, active }) %>
+<div class="app-shell">
 <%- include('partials/nav') %>
+<main class="main">
+<%- include('partials/topbar') %>
+<div class="content">
 
   <header class="d-flex flex-wrap justify-between items-center mb-3">
     <div>
@@ -38,4 +42,7 @@
     </div>
   <% }) %>
 
+</div>
+</main>
+</div>
 <%- include('partials/foot') %>

@@ -1,6 +1,10 @@
 <% const title = (client ? 'Edit ' + client.name : 'Add Client') + ' — NgulubeHub'; const active = client ? 'dashboard' : 'add'; %>
 <%- include('partials/head', { title, active }) %>
+<div class="app-shell">
 <%- include('partials/nav') %>
+<main class="main">
+<%- include('partials/topbar') %>
+<div class="content">
 
   <a href="<%= client ? '/clients/' + client.id : '/' %>" class="text-muted" style="font-size: 12px;"><i class="bi bi-arrow-left"></i> Back</a>
   <h1 style="font-size: 22px; font-weight: 700; margin: 6px 0 18px;">
@@ -62,7 +66,7 @@
         <div class="form-group">
           <label>Intro status</label>
           <select name="intro_status">
-            <% ['Not contacted','Intro sent','Meeting scheduled','Engaged','Won','Lost','On hold'].forEach(s => { %>
+            <% ['Not contacted','Intro sent','Meeting scheduled','Engaged','Won','Lost','On hold','Pending review'].forEach(s => { %>
               <option <%= (client && client.intro_status === s) ? 'selected' : '' %>><%= s %></option>
             <% }) %>
           </select>
@@ -115,4 +119,7 @@
     </div>
   </form>
 
+</div>
+</main>
+</div>
 <%- include('partials/foot') %>

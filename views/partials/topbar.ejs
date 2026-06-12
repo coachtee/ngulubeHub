@@ -1,0 +1,13 @@
+<div class="topbar">
+  <button class="icon-btn menu-btn" aria-label="Open menu" type="button"><i class="bi bi-list"></i></button>
+  <div class="greeting">Hi, <%= (typeof user !== 'undefined' && user ? user.username : 'there') %> <span class="wave">👋</span></div>
+
+  <% if (typeof user !== 'undefined' && user) { %>
+    <form class="search" method="GET" action="/dashboard">
+      <i class="bi bi-search"></i>
+      <input type="text" name="q" placeholder="Search clients by name, sector, or industry..." value="<%= typeof q !== 'undefined' ? q : '' %>" autocomplete="off">
+    </form>
+    <a href="/clients/new" class="btn primary"><i class="bi bi-plus-lg"></i> <span class="hidden-mobile">Add</span> <span class="hidden-mobile">Client</span><span class="visible-mobile">+</span></a>
+    <a href="/join" class="btn ghost" title="Public join form" target="_blank" rel="noopener"><i class="bi bi-link-45deg"></i></a>
+  <% } %>
+</div>

@@ -45,6 +45,8 @@ app.use((req, res, next) => {
 // ---------- auth middleware ----------
 function requireAuth(req, res, next) {
   if (req.session && req.session.user) return next();
+  // First-time visitors (no users yet) should land on /setup, not /login
+  if (users.countAll() === 0) return res.redirect('/setup');
   if (req.method === 'GET') return res.redirect('/login?next=' + encodeURIComponent(req.originalUrl));
   return res.status(401).send('Login required');
 }
@@ -206,6 +208,7 @@ app.get('/', requireAuth, (req, res) => {
     sectors: sectors.length,
     contacted: db.prepare("SELECT COUNT(*) as c FROM clients WHERE intro_status != 'Not contacted'").get().c,
     notContacted: db.prepare("SELECT COUNT(*) as c FROM clients WHERE intro_status = 'Not contacted'").get().c,
+    pending: db.prepare("SELECT COUNT(*) as c FROM clients WHERE intro_status = 'Pending review' OR intro_status = 'pending'").get().c,
   };
 
   res.render('dashboard', { clients, sectors, statuses, q, sector, status, stats, active: 'dashboard' });
@@ -331,6 +334,19 @@ app.post('/clients/:id/mark-intro-sent', requireAuth, (req, res) => {
   res.redirect(`/clients/${req.params.id}`);
 });
 
+// Approve a self-submitted /join lead: move it from 'pending' to 'Not contacted'
+// and log an activity so the timeline shows the admin's decision.
+app.post('/clients/:id/approve-pending', requireAuth, (req, res) => {
+  const id = Number(req.params.id);
+  const c = db.prepare('SELECT * FROM clients WHERE id = ?').get(id);
+  if (!c) return res.status(404).send('Client not found');
+  db.prepare('UPDATE clients SET intro_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+    .run('Not contacted', id);
+  db.prepare(`INSERT INTO interactions (client_id, type, summary, created_at) VALUES (?, ?, ?, ?)`)
+    .run(id, 'System', 'Approved self-submission from /join and added to pipeline as Not contacted.', new Date().toISOString());
+  res.redirect('/clients/' + id);
+});
+
 app.get('/catalog', requireAuth, (req, res) => {
   const catalog = loadCatalog();
   res.render('catalog', { catalog, active: 'catalog', title: 'AI Solutions Catalog — Ngulube Hub' });
@@ -339,6 +355,69 @@ app.get('/catalog', requireAuth, (req, res) => {
 app.get('/catalog.json', requireAuth, (req, res) => res.json(loadCatalog()));
 
 app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now(), users: users.countAll() }));
+
+// ---------- PUBLIC JOIN FORM (no login required) ----------
+
+// GET /join — public form for someone to submit themselves into the network
+app.get('/join', (req, res) => {
+  res.render('join', { title: 'Join the Network — Ngulube Hub' });
+});
+
+// POST /join — save into clients with status 'Pending review', source 'Self-submitted via /join'
+app.post('/join', (req, res) => {
+  const b = req.body || {};
+  const name = (b.name || '').trim();
+  const phone = (b.phone || '').trim();
+  const email = (b.email || '').trim();
+  const company = (b.company || '').trim();
+  const sector = (b.sector || '').trim();
+  const industry = (b.industry || '').trim();
+  const bio = (b.bio || '').trim();
+  const ideal = (b.ideal_client || '').trim();
+  const url = (b.url || '').trim();
+  const referrer = (b.referrer || '').trim();
+
+  // Validate
+  if (!name || !phone || !email || !company || !sector || !industry || !bio || !ideal) {
+    return res.status(400).render('join', {
+      title: 'Join the Network — Ngulube Hub',
+      error: 'Please fill in every required field.',
+    });
+  }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return res.status(400).render('join', {
+      title: 'Join the Network — Ngulube Hub',
+      error: 'That email doesn\'t look right. Please check and try again.',
+    });
+  }
+
+  // Compose a notes blob with the free-text fields we don't have columns for
+  const notes =
+    `Self-submitted via /join\n` +
+    `Submitted: ${new Date().toISOString()}\n` +
+    `Phone: ${phone}\n` +
+    (url ? `URL: ${url}\n` : '') +
+    (referrer ? `Referrer: ${referrer}\n` : '') +
+    `\nBio:\n${bio}\n\nIdeal client / partner:\n${ideal}\n`;
+
+  try {
+    db.prepare(`INSERT INTO clients
+      (name, company, email, sector, industry, bio, intro_status, source, notes, region, focus_areas, pain_points, ai_solutions, tags, created_at, updated_at)
+      VALUES
+      (?, ?, ?, ?, ?, ?, 'pending', 'Self-submitted via /join', ?, ?, '[]', '[]', '[]', '["self-submitted"]', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`)
+      .run(name, company, email, sector, industry, bio, notes, 'ZA');
+  } catch (err) {
+    console.error('[/join] insert failed:', err.message);
+    return res.status(500).render('join', {
+      title: 'Join the Network — Ngulube Hub',
+      error: 'Something went wrong saving your details. Please try again or WhatsApp us.',
+    });
+  }
+
+  // Log activity so the admin sees the new pending lead
+  res.render('join', { title: 'Thanks — Ngulube Hub', success: true });
+});
+
 
 // ---------- MATCHING + HELPERS ----------
 
