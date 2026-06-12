@@ -1,8 +1,9 @@
-<!-- Large version for login card (80x80) -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="80" height="80" role="img" aria-label="Ngulube Hub">
-  <polygon points="2,2 32,32 2,32" fill="none" stroke="#1F2D5C" stroke-width="3" stroke-linejoin="round"/>
-  <polygon points="62,2 32,32 62,32" fill="none" stroke="#1F2D5C" stroke-width="3" stroke-linejoin="round"/>
-  <rect x="8" y="28" width="48" height="32" rx="16" fill="none" stroke="#1F2D5C" stroke-width="3"/>
-  <circle cx="24" cy="44" r="4.5" fill="#1F2D5C"/>
-  <circle cx="40" cy="44" r="4.5" fill="#1F2D5C"/>
+<!-- Large 64x64 pig-nose logo for hero/banner use -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <polygon points="14,16 4,4 16,10" fill="#1F2D5C"/>
+  <polygon points="50,16 60,4 48,10" fill="#1F2D5C"/>
+  <rect x="10" y="14" width="44" height="36" rx="8" fill="#1F2D5C"/>
+  <ellipse cx="32" cy="36" rx="18" ry="11" fill="#F26B4A"/>
+  <ellipse cx="25" cy="36" rx="3" ry="4.5" fill="#1F2D5C"/>
+  <ellipse cx="39" cy="36" rx="3" ry="4.5" fill="#1F2D5C"/>
 </svg>
