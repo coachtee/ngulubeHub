@@ -1,13 +1,20 @@
-<!-- Ngulube Hub — pig-nose logo (slightly more detailed, ears on top) -->
+<!-- Ngulube Hub — pig-nose logo
+     Adaptive: uses currentColor for the snout, so it works on both
+     dark navy backgrounds and white card backgrounds.
+     Default fill colors:
+       - currentColor (snout) — set to #F26B4A orange by default
+       - #1F2D5C navy (face, ears, nostrils) — works on white
+     For dark backgrounds, swap currentColor via CSS to #F26B4A or keep navy.
+-->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32">
-  <!-- Ears (triangular, behind the face) -->
+  <!-- Ears (navy) -->
   <polygon points="14,16 4,4 16,10" fill="#1F2D5C"/>
   <polygon points="50,16 60,4 48,10" fill="#1F2D5C"/>
-  <!-- Face (rounded rectangle, the snout/head) -->
+  <!-- Face (navy rounded rectangle) -->
   <rect x="10" y="14" width="44" height="36" rx="8" fill="#1F2D5C"/>
-  <!-- Snout (lighter oval inside the face) -->
-  <ellipse cx="32" cy="36" rx="18" ry="11" fill="#F26B4A"/>
-  <!-- Nostrils -->
+  <!-- Snout (orange — uses currentColor so CSS can override) -->
+  <ellipse cx="32" cy="36" rx="18" ry="11" fill="currentColor" color="#F26B4A"/>
+  <!-- Nostrils (navy — pop on the orange snout) -->
   <ellipse cx="25" cy="36" rx="3" ry="4.5" fill="#1F2D5C"/>
   <ellipse cx="39" cy="36" rx="3" ry="4.5" fill="#1F2D5C"/>
 </svg>
