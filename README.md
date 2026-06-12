@@ -7,6 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![No build step](https://img.shields.io/badge/build-none-success)]()
 [![Single-file DB](https://img.shields.io/badge/db-sqlite-blue)]()
+[![Docker ready](https://img.shields.io/badge/docker-ready-2496ED)]()
 
 Ngulube Hub is a self-hosted CRM/dashboard for keeping a clean, growing record of the people in your business network — the industries they work in, the pain points you can solve for them, and the AI solutions that match. It also generates a **one-click personalised intro brief** that you can send as a PDF/print to start the conversation.
 
@@ -26,6 +27,7 @@ Ngulube Hub is a self-hosted CRM/dashboard for keeping a clean, growing record o
 - 🔍 **Search** — name, company, focus area, tag, bio
 - 📊 **AI catalog** — browse what we offer, filter by industry
 - 💾 **Single-file backup** — `data/ngulubehub.sqlite` is the whole DB
+- 🐳 **Docker-ready** — `docker-compose.yml` for one-shot deploy via Portainer or CLI
 
 ![Profile](screenshot-profile.png)
 ![Intro](screenshot-intro.png)
@@ -37,15 +39,15 @@ Ngulube Hub is a self-hosted CRM/dashboard for keeping a clean, growing record o
 
 | Layer | Choice | Why |
 |------|--------|-----|
-| Runtime | Node.js 20+ | Available everywhere, no native compile dance for most deps |
+| Runtime | Node.js 20+ | Available everywhere |
 | HTTP | Express 4 | Smallest, most boring, most deployed framework |
 | DB | SQLite (via `better-sqlite3`) | One file, no server, perfect for a private team tool |
 | Views | EJS | Zero build step; HTML in, HTML out |
 | Auth | `express-session` + `bcryptjs` | Cookie sessions, no external store needed at this scale |
 | UI | Bootstrap 5 via CDN + custom CSS | Looks good, no asset pipeline |
-| Process | `pm2` | Survives reboots, single-file config |
+| Process | `pm2` (bare metal) or `docker compose` (recommended) | Survives reboots, single-file config |
 
-**No build step. No Docker required. No external services.** One `node server.js` and you're up.
+**No build step. Docker optional. No external services.**
 
 ---
 
@@ -63,34 +65,47 @@ node server.js         # http://localhost:3000
 
 Open `http://localhost:3000`. The first time, you'll be redirected to `/setup` to create the first super-admin. Then log in and start using it.
 
-### Production (on a VPS)
+### Production — Docker (recommended)
+
+The repo includes a `docker-compose.yml` that builds the image, persists the SQLite DB to a named volume, and exposes port 3000.
 
 ```bash
-# One-time setup on a fresh Ubuntu 22.04/24.04 server
+# 1. Clone the repo on your VPS
 git clone https://github.com/coachtee/ngulubeHub.git
 cd ngulubeHub
-bash install.sh        # installs Node 20, pm2, deps, seeds, starts the service
+
+# 2. Create .env with a real SESSION_SECRET
+cp .env.example .env
+SECRET=$(node -e "console.log(require('crypto').randomBytes(48).toString('hex'))")
+sed -i "s|SESSION_SECRET=.*|SESSION_SECRET=$SECRET|" .env
+
+# 3. Build + start
+docker compose up -d --build
+
+# 4. Check it's up
+docker compose ps
+curl -s http://localhost:3000/health
+```
+
+The app is at `http://YOUR_VPS:3000`. **Point Nginx Proxy Manager at it for HTTPS** (see below).
+
+**Using Portainer?** Go to **Stacks → Add Stack → paste the contents of `docker-compose.yml` → Deploy.** Works the same.
+
+### Production — bare-metal (no Docker)
+
+```bash
+git clone https://github.com/coachtee/ngulubeHub.git
+cd ngulubeHub
+bash install.sh        # installs Node 20 (via NVM, no sudo) + pm2 + deps + starts
 ```
 
 `install.sh` does:
-- Install Node.js 20.x via NodeSource (if missing)
-- Install `pm2` globally
+- Install Node.js 20.x via NVM in `~/.nvm` (no `sudo` needed)
+- Install `pm2` to `~/.npm-global/`
 - `npm install --omit=dev`
 - `node db/seed.js`
-- `pm2 start ecosystem.config.cjs` + `pm2 save` + `pm2 startup`
-- Opens ufw port 3000 (if ufw is active)
-
-The app is then reachable at `http://YOUR_VPS:3000`. **Point your reverse proxy (Nginx, Caddy, Nginx Proxy Manager) at it for HTTPS.**
-
-### Pointing a domain at it (Nginx Proxy Manager example)
-
-1. Open NPM at `http://YOUR_VPS:81`
-2. **Add Proxy Host:**
-   - Domain: `ngulube.yourdomain.co.za`
-   - Scheme: `http`
-   - Forward to: `127.0.0.1:3000` (or `host.docker.internal` if NPM is in Docker)
-3. **SSL tab** → Request Let's Encrypt certificate
-4. **Save** → `https://ngulube.yourdomain.co.za` is live
+- `pm2 start ecosystem.config.cjs` + `pm2 save`
+- Opens ufw port 3000 (only if sudo is available)
 
 ---
 
@@ -139,7 +154,7 @@ From the new super-admin's `/admin/users` page, you can add more admins (Hulisan
 | Var | Default | Purpose |
 |-----|---------|---------|
 | `PORT` | `3000` | HTTP port |
-| `HOST` | `0.0.0.0` | Bind address |
+| `HOST` | `0.0.0.0` | Bind address (bare-metal only) |
 | `SESSION_SECRET` | (dev fallback) | **Set this in production.** Long random string. |
 
 Generate one:
@@ -147,16 +162,8 @@ Generate one:
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
 
-Set it before starting:
-```bash
-export SESSION_SECRET="<paste the secret>"
-pm2 restart ngulubehub
-```
-
-Or in `ecosystem.config.cjs`:
-```js
-env: { NODE_ENV: 'production', PORT: 3000, SESSION_SECRET: '...', ... }
-```
+For Docker, set it in `.env` (see `.env.example`).
+For bare-metal, set it in your shell before `pm2 start` or in `ecosystem.config.cjs`.
 
 ---
 
@@ -192,6 +199,10 @@ Edit `db/seed.js` to update the 17 starter profiles, or add more from the UI.
 
 SQLite file: `data/ngulubehub.sqlite`
 
+**Docker:** persisted in the named volume `ngulubehub-data`. Use `docker compose down -v` only if you want to wipe everything.
+
+**Bare-metal:** `data/ngulubehub.sqlite` in the project dir.
+
 Backup: just copy that file somewhere safe.
 ```bash
 cp data/ngulubehub.sqlite ~/backup-$(date +%F).sqlite
@@ -206,25 +217,35 @@ pm2 start ngulubehub
 
 ---
 
-## 🔍 Useful pm2 commands
+## 🔍 Useful commands
 
+### Docker
 ```bash
-pm2 status              # process state
-pm2 logs ngulubehub     # tail logs
-pm2 restart ngulubehub  # restart
-pm2 stop ngulubehub     # stop
-pm2 monit               # live CPU / memory monitor
+docker compose ps              # container status
+docker compose logs -f         # tail logs
+docker compose restart         # restart
+docker compose down            # stop (keep data)
+docker compose down -v         # stop AND wipe data
+```
+
+### pm2 (bare-metal)
+```bash
+pm2 status                     # process state
+pm2 logs ngulubehub            # tail logs
+pm2 restart ngulubehub         # restart
+pm2 stop ngulubehub            # stop
+pm2 monit                      # live CPU / memory
 ```
 
 ---
 
 ## 🤝 Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow. Keep PRs small and focused.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 🔒 Security
 
-See [SECURITY.md](SECURITY.md) for how to report a vulnerability. Don't open a public issue for security bugs.
+See [SECURITY.md](SECURITY.md). Don't open a public issue for security bugs.
 
 ## 📄 License
 

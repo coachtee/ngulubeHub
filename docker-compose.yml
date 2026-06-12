@@ -1,0 +1,44 @@
+version: "3.8"
+
+# Ngulube Hub — single-container stack
+# Deploy from Portainer: Stacks → Add stack → paste this file → Deploy
+#
+# What it does:
+#   - Builds from the local Dockerfile (or pulls the image)
+#   - Persists the SQLite database to a named volume
+#   - Exposes the app on port 3000 (you proxy it via Nginx Proxy Manager)
+#   - Auto-restarts unless you stop it
+#   - Reads SESSION_SECRET from the .env file (created below)
+
+services:
+  ngulubehub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ngulubehub:1.2
+    container_name: ngulubehub
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ngulubehub-data:/app/data         # SQLite + uploaded files
+      - ./logs:/app/logs                  # optional: persist logs to host
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - SESSION_SECRET=${SESSION_SECRET:?set SESSION_SECRET in .env (see .env.example)}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  ngulubehub-data:
+    driver: local
