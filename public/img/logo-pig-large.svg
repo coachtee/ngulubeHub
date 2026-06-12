@@ -1,9 +1,9 @@
-<!-- Large 64x64 pig-nose logo for hero/banner use -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <polygon points="14,16 4,4 16,10" fill="#1F2D5C"/>
-  <polygon points="50,16 60,4 48,10" fill="#1F2D5C"/>
-  <rect x="10" y="14" width="44" height="36" rx="8" fill="#1F2D5C"/>
-  <ellipse cx="32" cy="36" rx="18" ry="11" fill="#F26B4A"/>
-  <ellipse cx="25" cy="36" rx="3" ry="4.5" fill="#1F2D5C"/>
-  <ellipse cx="39" cy="36" rx="3" ry="4.5" fill="#1F2D5C"/>
+<!-- Ngulube Hub — official brand logo (large, 80x80)
+     Same as logo-pig.svg but bigger for the login card hero area.
+     Locked brand asset.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="80" height="80" role="img" aria-label="Ngulube Hub">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#1F2D5C"/>
+  <path d="M19 46 L19 18 L25 18 L40 36.5 L40 18 L46 18 L46 46 L40 46 L25 27.5 L25 46 Z" fill="#FFFFFF"/>
+  <circle cx="50" cy="46" r="3.2" fill="#F26B4A"/>
 </svg>

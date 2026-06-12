@@ -37,6 +37,8 @@ app.use(session({
 app.use((req, res, next) => {
   res.locals.title = res.locals.title || 'Ngulube Hub';
   res.locals.currentUser = (req.session && req.session.user) ? req.session.user : null;
+  // Alias `user` to currentUser for templates that reference `user` directly
+  res.locals.user = res.locals.currentUser;
   res.locals.flash = (req.session && req.session.flash) ? req.session.flash : null;
   if (req.session) req.session.flash = null;
   next();
