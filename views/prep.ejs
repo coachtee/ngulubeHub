@@ -1,0 +1,157 @@
+<% const title = 'Prep for ' + client.name + ' — NgulubeHub'; const active = 'dashboard'; %>
+<%- include('partials/head', { title, active }) %>
+<div class="app-shell">
+<%- include('partials/nav') %>
+<main class="main">
+<%- include('partials/topbar') %>
+<div class="content">
+
+  <% if (typeof flash !== 'undefined' && flash) { %>
+    <div class="alert <%= flash.type === 'error' ? 'alert-danger' : 'alert-success' %>" style="border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px;">
+      <i class="bi bi-<%= flash.type === 'error' ? 'exclamation-triangle' : 'check-circle' %>"></i> <%= flash.message %>
+    </div>
+  <% } %>
+
+  <div class="cu-page-head">
+    <a href="/clients/<%= client.id %>" style="color: var(--text-3);"><i class="bi bi-arrow-left"></i> Back to <%= client.name %></a>
+    <i class="bi bi-chevron-right" style="font-size: 9px;"></i>
+    <span>Meeting prep</span>
+  </div>
+  <header style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px; flex-wrap: wrap;">
+    <div class="avatar lg" style="width: 48px; height: 48px; font-size: 18px;"><%= (client.name||'').split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase() %></div>
+    <div style="flex: 1; min-width: 0;">
+      <h1 class="cu-page-title" style="margin: 0;"><i class="bi bi-clipboard-pulse"></i> Prep: <%= client.name %></h1>
+      <p class="cu-page-sub" style="margin: 0;">
+        <%= client.title %><%= client.company ? ' · ' + client.company : '' %>
+        <% if (client.sector) { %> · <%= client.sector %><% } %>
+      </p>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <% if (brief.mode === 'ai' || brief.mode === 'ai-cached') { %>
+        <span class="pill blue sm"><i class="bi bi-cpu"></i> AI generated</span>
+      <% } else if (brief.mode === 'ai-raw') { %>
+        <span class="pill orange sm">AI raw</span>
+      <% } else { %>
+        <span class="pill gray sm">Structured only</span>
+      <% } %>
+      <form method="post" action="/clients/<%= client.id %>/prep" style="display: inline;">
+        <button class="btn" type="submit" title="Regenerate brief">
+          <i class="bi bi-arrow-clockwise"></i> Regenerate
+        </button>
+      </form>
+    </div>
+  </header>
+
+  <% if (brief.ai_error) { %>
+    <div class="alert alert-danger" style="border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px;">
+      <i class="bi bi-exclamation-triangle"></i> AI provider failed: <%= brief.ai_error %>. Showing structured-only fallback.
+    </div>
+  <% } %>
+  <% if (!brief.has_ai) { %>
+    <div class="alert" style="background: #fef9c3; border: 1px solid #fde68a; color: #92400e; border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px;">
+      <i class="bi bi-info-circle"></i> No AI provider configured yet — showing a structured brief assembled from your data. <a href="/admin/providers" style="color: #92400e; text-decoration: underline;">Add a provider</a> to get AI-synthesised prep.
+    </div>
+  <% } %>
+  <% if (brief.cached) { %>
+    <div class="alert" style="background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); border-radius: 6px; padding: 8px 14px; font-size: 12px; margin-bottom: 16px;">
+      <i class="bi bi-clock-history"></i> Cached from <%= brief.generated_at %> · <code><%= brief.model %></code>
+    </div>
+  <% } %>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start;">
+    <!-- LEFT COLUMN -->
+    <div>
+      <div class="panel" style="border-left: 3px solid var(--brand);">
+        <div class="panel-head"><i class="bi bi-person-vcard"></i> Who they are</div>
+        <div class="panel-body" style="font-size: 14px; line-height: 1.6;">
+          <%= brief.who || '—' %>
+        </div>
+      </div>
+
+      <div class="panel" style="border-left: 3px solid var(--blue);">
+        <div class="panel-head"><i class="bi bi-diagram-3"></i> Where we are</div>
+        <div class="panel-body" style="font-size: 13.5px; line-height: 1.55;">
+          <%= brief.where_we_are || '—' %>
+        </div>
+      </div>
+
+      <div class="panel" style="border-left: 3px solid var(--green);">
+        <div class="panel-head"><i class="bi bi-chat-quote"></i> Talking points</div>
+        <div class="panel-body" style="font-size: 13.5px; line-height: 1.55;">
+          <% if (brief.talking_points && brief.talking_points.length) { %>
+            <ol style="padding-left: 18px; margin: 0;">
+              <% brief.talking_points.forEach(q => { %>
+                <li style="margin-bottom: 8px;"><%= q %></li>
+              <% }) %>
+            </ol>
+          <% } else { %>
+            <p class="text-muted mb-0" style="font-size: 13px;">No pain points recorded — <a href="/clients/<%= client.id %>/edit">add some</a> to get better talking points.</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div>
+      <div class="panel" style="border-left: 3px solid var(--purple);">
+        <div class="panel-head"><i class="bi bi-stars"></i> What I can offer</div>
+        <div class="panel-body" style="font-size: 13px; line-height: 1.5;">
+          <% if (brief.what_i_can_offer && brief.what_i_can_offer.length) { %>
+            <ul style="padding-left: 0; margin: 0; list-style: none;">
+              <% brief.what_i_can_offer.forEach(s => { %>
+                <li style="padding: 8px 0; border-bottom: 1px solid var(--border);">
+                  <i class="bi bi-check2" style="color: var(--green); margin-right: 4px;"></i><%= s %>
+                </li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+            <p class="text-muted mb-0" style="font-size: 13px;">No solutions matched.</p>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="panel" style="border-left: 3px solid var(--orange);">
+        <div class="panel-head"><i class="bi bi-arrow-right-circle"></i> After this call</div>
+        <div class="panel-body" style="font-size: 14px; font-weight: 500; line-height: 1.5;">
+          <%= brief.next_step || '—' %>
+        </div>
+      </div>
+
+      <% if (brief.open_threads && brief.open_threads.length) { %>
+      <div class="panel" style="border-left: 3px solid var(--red);">
+        <div class="panel-head"><i class="bi bi-exclamation-circle"></i> Open threads</div>
+        <div class="panel-body" style="font-size: 12.5px;">
+          <ul style="padding-left: 18px; margin: 0;">
+            <% brief.open_threads.forEach(t => { %>
+              <li style="margin-bottom: 4px;"><%= t %></li>
+            <% }) %>
+          </ul>
+        </div>
+      </div>
+      <% } %>
+
+      <% if (brief.recent_interactions && brief.recent_interactions.length) { %>
+      <div class="panel">
+        <div class="panel-head"><i class="bi bi-clock-history"></i> Recent activity</div>
+        <div class="panel-body" style="font-size: 12.5px;">
+          <% brief.recent_interactions.forEach(i => { %>
+            <div style="padding: 6px 0; border-bottom: 1px solid var(--border);">
+              <div class="text-muted" style="font-size: 11px;"><i class="bi bi-clock"></i> <%= (i.created_at || '').slice(0,16).replace('T',' ') %> · <strong><%= i.type %></strong></div>
+              <div><%= i.summary %></div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
+    </div>
+  </div>
+
+  <div style="margin-top: 24px; padding: 16px; background: var(--surface-2); border-radius: 8px; border: 1px dashed var(--border); font-size: 12.5px; color: var(--text-2);">
+    <strong><i class="bi bi-lightbulb"></i> Tip:</strong>
+    After the call, hit <a href="/clients/<%= client.id %>">their profile</a>, log a quick note in Activity Log, and update the status. The brief above will refresh next time.
+  </div>
+
+</div>
+</main>
+</div>
+<%- include('partials/foot') %>

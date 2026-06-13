@@ -44,6 +44,7 @@
     </div>
     <div class="actions">
       <a href="/clients/<%= client.id %>/intro" target="_blank" class="btn primary"><i class="bi bi-file-earmark-text"></i> Generate Intro</a>
+      <a href="/clients/<%= client.id %>/prep" class="btn" style="background: var(--brand); color: #fff; border-color: var(--brand);" title="AI-synthesised briefing before a call"><i class="bi bi-clipboard-pulse"></i> Prep</a>
       <form method="post" action="/clients/<%= client.id %>/mark-intro-sent" class="d-inline">
         <button type="submit" class="btn" onclick="return confirm('Mark intro as sent and log an interaction?')"><i class="bi bi-send-check"></i> Mark Sent</button>
       </form>

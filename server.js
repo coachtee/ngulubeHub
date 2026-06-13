@@ -231,6 +231,142 @@ app.post('/admin/users/:id/password', requireAuth, requireSuperadmin, (req, res)
   res.redirect('/admin/users');
 });
 
+// ---------- AI PROVIDERS (admin) ----------
+const ai = require('./db/ai');
+
+app.get('/admin/providers', requireAuth, requireSuperadmin, (req, res) => {
+  res.render('admin-providers', {
+    providers: ai.listProviders(),
+    kinds: ai.listKinds(),
+    active: 'admin', title: 'AI Providers — Ngulube Hub',
+  });
+});
+
+app.post('/admin/providers', requireAuth, requireSuperadmin, (req, res) => {
+  const { name, kind, api_key, base_url, model, is_default, priority, notes } = req.body;
+  try {
+    if (!name || !kind || !model) {
+      flash(req, 'error', 'Name, kind, and model are required.');
+      return res.redirect('/admin/providers');
+    }
+    if (!ai.adapterFor(kind)) {
+      flash(req, 'error', 'Unknown provider kind: ' + kind);
+      return res.redirect('/admin/providers');
+    }
+    ai.createProvider({
+      name, kind, api_key, base_url, model,
+      is_default: is_default ? 1 : 0,
+      priority: priority ? parseInt(priority) : 100,
+      notes,
+    });
+    flash(req, 'success', 'Provider added.');
+  } catch (e) {
+    flash(req, 'error', 'Could not add: ' + e.message);
+  }
+  res.redirect('/admin/providers');
+});
+
+app.get('/admin/providers/:id/edit', requireAuth, requireSuperadmin, (req, res) => {
+  const p = ai.getProvider(req.params.id);
+  if (!p) { flash(req, 'error', 'Provider not found.'); return res.redirect('/admin/providers'); }
+  res.render('admin-provider-edit', {
+    provider: p, kinds: ai.listKinds(),
+    active: 'admin', title: 'Edit ' + p.name + ' — Ngulube Hub',
+  });
+});
+
+app.post('/admin/providers/:id/edit', requireAuth, requireSuperadmin, (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const p = ai.getProvider(id);
+  if (!p) { flash(req, 'error', 'Provider not found.'); return res.redirect('/admin/providers'); }
+  const { name, kind, api_key, base_url, model, is_default, enabled, priority, notes } = req.body;
+  // Don't blank out the API key if the user left the field empty
+  const nextKey = (api_key && api_key.trim()) ? api_key.trim() : p.api_key;
+  try {
+    ai.updateProvider(id, {
+      name, kind,
+      api_key: nextKey,
+      base_url: base_url || null,
+      model,
+      is_default: is_default ? 1 : 0,
+      enabled: enabled === undefined ? 1 : (enabled ? 1 : 0),
+      priority: priority ? parseInt(priority) : 100,
+      notes: notes || null,
+    });
+    flash(req, 'success', 'Provider updated.');
+  } catch (e) {
+    flash(req, 'error', 'Update failed: ' + e.message);
+  }
+  res.redirect('/admin/providers');
+});
+
+app.post('/admin/providers/:id/test', requireAuth, requireSuperadmin, async (req, res) => {
+  const result = await ai.testConnection(req.params.id);
+  flash(req, result.ok ? 'success' : 'error',
+    result.ok ? ('Connection OK: ' + (result.message || 'connected')) : ('Failed: ' + (result.message || 'unknown')));
+  res.redirect('/admin/providers');
+});
+
+app.post('/admin/providers/:id/default', requireAuth, requireSuperadmin, (req, res) => {
+  const p = ai.getProvider(req.params.id);
+  if (!p) { flash(req, 'error', 'Provider not found.'); return res.redirect('/admin/providers'); }
+  if (!p.enabled) { flash(req, 'error', 'Enable the provider first.'); return res.redirect('/admin/providers'); }
+  ai.updateProvider(req.params.id, { is_default: 1 });
+  flash(req, 'success', p.name + ' is now the default.');
+  res.redirect('/admin/providers');
+});
+
+app.post('/admin/providers/:id/toggle', requireAuth, requireSuperadmin, (req, res) => {
+  const p = ai.getProvider(req.params.id);
+  if (!p) { flash(req, 'error', 'Provider not found.'); return res.redirect('/admin/providers'); }
+  if (p.is_default && p.enabled) {
+    flash(req, 'error', 'Cannot disable the default provider. Set another one as default first.');
+    return res.redirect('/admin/providers');
+  }
+  ai.updateProvider(req.params.id, { enabled: !p.enabled });
+  flash(req, 'success', (p.enabled ? 'Disabled' : 'Enabled') + ' ' + p.name);
+  res.redirect('/admin/providers');
+});
+
+app.post('/admin/providers/:id/delete', requireAuth, requireSuperadmin, (req, res) => {
+  const p = ai.getProvider(req.params.id);
+  if (!p) { flash(req, 'error', 'Provider not found.'); return res.redirect('/admin/providers'); }
+  if (p.is_default) {
+    flash(req, 'error', 'Cannot delete the default provider.');
+    return res.redirect('/admin/providers');
+  }
+  ai.deleteProvider(req.params.id);
+  flash(req, 'success', 'Provider deleted.');
+  res.redirect('/admin/providers');
+});
+
+// ---------- MEETING PREP ----------
+const prep = require('./db/prep');
+
+app.get('/clients/:id/prep', requireAuth, async (req, res) => {
+  const client = loadClient(req.params.id);
+  if (!client) return res.status(404).send('Client not found');
+  try {
+    const brief = await prep.prepFor(req.params.id);
+    res.render('prep', { client, brief, active: 'dashboard' });
+  } catch (e) {
+    flash(req, 'error', 'Prep failed: ' + e.message);
+    res.redirect(`/clients/${req.params.id}`);
+  }
+});
+
+app.post('/clients/:id/prep', requireAuth, async (req, res) => {
+  const client = loadClient(req.params.id);
+  if (!client) return res.status(404).send('Client not found');
+  try {
+    const brief = await prep.prepFor(req.params.id, { force: true });
+    flash(req, 'success', 'Brief regenerated.');
+  } catch (e) {
+    flash(req, 'error', 'Regenerate failed: ' + e.message);
+  }
+  res.redirect(`/clients/${req.params.id}/prep`);
+});
+
 // ---------- DASHBOARD ROUTES (all require auth) ----------
 
 // Dashboard routes (both / and /dashboard for backward compat with links)

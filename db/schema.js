@@ -78,6 +78,31 @@ CREATE TABLE IF NOT EXISTS attachments (
   FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS ai_providers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,                 -- "OpenAI (primary)", "Anthropic (long-context)"
+  kind TEXT NOT NULL,                 -- 'openai' | 'anthropic' | 'openai_compat'
+  api_key TEXT,                       -- plain text for now (personal tool); document in /admin/providers
+  base_url TEXT,                      -- for openai_compat: e.g. http://localhost:11434
+  model TEXT,                         -- e.g. 'gpt-4o-mini', 'claude-sonnet-4-5', 'mistral-large'
+  enabled INTEGER NOT NULL DEFAULT 1,
+  is_default INTEGER NOT NULL DEFAULT 0,
+  priority INTEGER NOT NULL DEFAULT 100, -- lower number = higher priority (failover)
+  last_tested_at TEXT,
+  last_test_ok INTEGER,
+  notes TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS ai_prep_cache (
+  client_id INTEGER PRIMARY KEY,
+  provider_id INTEGER,
+  model TEXT,
+  content_json TEXT NOT NULL,         -- JSON: {who, where_we_are, talking_points, what_i_can_offer, next_step}
+  generated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
+);
+
 CREATE INDEX IF NOT EXISTS idx_clients_sector ON clients(sector);
 CREATE INDEX IF NOT EXISTS idx_clients_status ON clients(intro_status);
 CREATE INDEX IF NOT EXISTS idx_interactions_client ON interactions(client_id);
