@@ -8,62 +8,67 @@
 
 <div class="content">
 
-  <!-- Page header -->
+  <!-- Page header (ClickUp-style) -->
+  <div class="cu-page-head">
+    <i class="bi bi-house-door"></i><span>Home</span>
+    <i class="bi bi-chevron-right" style="font-size: 9px;"></i>
+    <span>All Clients</span>
+  </div>
   <header class="d-flex flex-wrap justify-between items-center mb-3" style="gap: 12px;">
     <div>
-      <h1 style="font-size: 22px; font-weight: 700; margin: 0;">Business Clients</h1>
-      <p class="text-muted mb-0" style="font-size: 13px; margin-top: 2px;">Your growing network of founders, advisors, and operators.</p>
+      <h1 class="cu-page-title"><i class="bi bi-people"></i> Business Clients</h1>
+      <p class="cu-page-sub">Your growing network of <strong><%= stats.total %></strong> founders, advisors, and operators.</p>
     </div>
-    <div class="d-flex gap-1 flex-wrap">
+    <div class="cu-page-actions">
       <a class="btn" href="/join" target="_blank" rel="noopener"><i class="bi bi-link-45deg"></i> <span class="hidden-mobile">Share Join</span><span class="visible-mobile">Share</span></a>
       <a class="btn primary" href="/clients/new"><i class="bi bi-plus-lg"></i> <span class="hidden-mobile">Add Client</span><span class="visible-mobile">Add</span></a>
     </div>
   </header>
 
-  <!-- Stats strip -->
+  <!-- Stats strip (ClickUp-style) -->
   <div class="stats">
-    <div class="stat">
-      <span class="label">Total Clients</span>
-      <span class="value"><%= stats.total %></span>
+    <div class="cu-stat">
+      <span class="lbl">Total Clients</span>
+      <span class="val"><%= stats.total %></span>
       <span class="delta">across <%= stats.sectors %> sectors</span>
     </div>
-    <div class="stat warn">
-      <span class="label">Not Yet Contacted</span>
-      <span class="value"><%= stats.notContacted %></span>
-      <span class="delta">August targets</span>
+    <div class="cu-stat warn">
+      <span class="lbl">Not Yet Contacted</span>
+      <span class="val"><%= stats.notContacted %></span>
+      <span class="delta"><a href="/pipeline/not-contacted">August targets →</a></span>
     </div>
-    <div class="stat good">
-      <span class="label">In Motion</span>
-      <span class="value"><%= stats.contacted %></span>
+    <div class="cu-stat good">
+      <span class="lbl">In Motion</span>
+      <span class="val"><%= stats.contacted %></span>
       <span class="delta up">↗ active conversations</span>
     </div>
-    <div class="stat" style="<%= stats.pending > 0 ? 'background: #fefce8; border-color: #fde68a;' : '' %>">
-      <span class="label">Pending Review</span>
-      <span class="value" style="<%= stats.pending > 0 ? 'color: #ca8a04;' : '' %>"><%= stats.pending %></span>
+    <div class="cu-stat" style="<%= stats.pending > 0 ? 'background: linear-gradient(180deg, #fffbeb 0%, var(--surface) 60%);' : '' %>">
+      <span class="lbl">Pending Review</span>
+      <span class="val" style="<%= stats.pending > 0 ? 'color: var(--yellow);' : '' %>"><%= stats.pending %></span>
       <span class="delta"><%- stats.pending > 0 ? '<a href="/dashboard?status=pending">Review now</a>' : 'no new submissions' %></span>
     </div>
   </div>
 
   <!-- Project + Task widgets (second row) -->
   <div class="stats" style="grid-template-columns: repeat(4, 1fr);">
-    <div class="stat">
-      <span class="label">Active Projects</span>
-      <span class="value"><%= projectStats.active %></span>
-      <span class="delta"><a href="/projects">Open kanban</a></span>
+    <div class="cu-stat">
+      <span class="lbl">Active Projects</span>
+      <span class="val"><%= projectStats.active %></span>
+      <span class="delta"><a href="/projects">Open kanban →</a></span>
     </div>
-    <div class="stat warn">
-      <span class="label">Overdue Tasks</span>
-      <span class="value"><%= projectStats.overdueTasks %></span>
-      <span class="delta"><a href="/tasks">My tasks</a></span>
+    <div class="cu-stat warn">
+      <span class="lbl">Overdue Tasks</span>
+      <span class="val"><%= projectStats.overdueTasks %></span>
+      <span class="delta"><a href="/tasks">My tasks →</a></span>
     </div>
-    <div class="stat">
-      <span class="label">In Scoping</span>
-      <span class="value"><%= projectStats.scoping %></span>
+    <div class="cu-stat">
+      <span class="lbl">In Scoping</span>
+      <span class="val"><%= projectStats.scoping %></span>
       <span class="delta"><%= projectStats.quoted %> quoted</span>
     </div>
-    <div class="stat good">
-      <span class="label">Closed (Won)</span>
-      <span class="value"><%= projectStats.closedWon %></span>
+    <div class="cu-stat good">
+      <span class="lbl">Closed (Won)</span>
+      <span class="val"><%= projectStats.closedWon %></span>
       <span class="delta">R <%= Number(projectStats.totalValue).toLocaleString() %> pipeline</span>
     </div>
   </div>
@@ -270,119 +275,114 @@
     </div>
   </div>
 
-  <!-- Filter bar -->
-  <form class="filterbar" method="get" action="/">
-    <div class="search-inline">
+  <!-- ClickUp-style client list -->
+  <form class="cu-toolbar" method="get" action="/">
+    <div class="cu-search">
       <i class="bi bi-search"></i>
       <input name="q" placeholder="Search by name, company, focus area, tag…" value="<%= q %>">
     </div>
-    <span class="filter-label">Sector</span>
     <select name="sector">
-      <option value="">All</option>
+      <option value="">All sectors</option>
       <% sectors.forEach(s => { %>
         <option value="<%= s %>" <%= sector === s ? 'selected' : '' %>><%= s %></option>
       <% }) %>
     </select>
-    <span class="filter-label">Status</span>
     <select name="status">
-      <option value="">All</option>
+      <option value="">All statuses</option>
       <% ['not_contacted','intro_sent','engaged','won','pending'].forEach(st => { %>
         <option value="<%= st %>" <%= status === st ? 'selected' : '' %>><%= st.replace('_',' ') %></option>
       <% }) %>
     </select>
-    <div class="right">
-      <button class="btn" type="submit"><i class="bi bi-funnel"></i> Apply</button>
-      <% if (q || sector || status) { %>
-        <a class="btn ghost" href="/">Clear</a>
-      <% } %>
+    <button class="btn" type="submit"><i class="bi bi-funnel"></i> Filter</button>
+    <% if (q || sector || status) { %>
+      <a class="btn ghost" href="/">Clear</a>
+    <% } %>
+    <div style="margin-left: auto; display: flex; gap: 8px;">
+      <a class="btn sm" href="/api/clients.csv"><i class="bi bi-download"></i> Export</a>
     </div>
   </form>
 
-  <!-- Table -->
+  <!-- View switcher + count + add -->
+  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+    <div class="cu-views">
+      <a class="active" href="/"><i class="bi bi-list-ul"></i> List <span class="cu-view-count"><%= clients.length %></span></a>
+      <a href="/board"><i class="bi bi-kanban"></i> Board</a>
+      <a href="/calendar"><i class="bi bi-calendar3"></i> Calendar</a>
+    </div>
+  </div>
+
+  <!-- Compact list (clickup-style) -->
   <div class="table-card">
-    <div class="table-toolbar">
-      <span class="selection-info"><strong><%= clients.length %></strong> clients</span>
-      <div class="right">
-        <a class="btn sm" href="/api/clients.csv"><i class="bi bi-download"></i> <span class="hidden-mobile">Export CSV</span></a>
+    <div class="cu-row-head">
+      <div>Client</div>
+      <div>Sector / Industry</div>
+      <div>Status</div>
+      <div>Focus</div>
+      <div>Last Touch</div>
+      <div style="text-align: right;">Solutions</div>
+    </div>
+    <% if (!clients.length) { %>
+      <div class="cu-empty">
+        <i class="bi bi-inbox"></i>
+        <div class="t">No clients match your filters</div>
+        <div class="s">Try clearing the filters or <a href="/clients/new">add a new client</a>.</div>
       </div>
-    </div>
-    <div class="table-scroll">
-    <table class="t">
-      <thead>
-        <tr>
-          <th>Client</th>
-          <th>Sector / Industry</th>
-          <th>Focus</th>
-          <th>Status</th>
-          <th>Solutions</th>
-          <th style="text-align:right;">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (!clients.length) { %>
-          <tr><td colspan="6">
-            <div class="empty">
-              <i class="bi bi-inbox"></i>
-              <div class="t">No clients match your filters</div>
-              <div class="s">Try clearing the filters or <a href="/clients/new">add a new client</a>.</div>
+    <% } %>
+    <% clients.forEach(c => { %>
+      <% const st = c.intro_status || 'not_contacted'; %>
+      <a class="cu-row" href="/clients/<%= c.id %>">
+        <div class="cu-cell">
+          <div class="avatar-row">
+            <div class="avatar"><%= (c.name||'?').split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase() %></div>
+            <div class="meta">
+              <div class="n cu-cell-truncate"><%= c.name %></div>
+              <div class="s cu-cell-truncate"><%= c.company || c.title || '' %></div>
             </div>
-          </td></tr>
-        <% } %>
-        <% clients.forEach(c => { %>
-          <tr>
-            <td>
-              <div class="avatar-row">
-                <div class="avatar"><%= (c.name||'?').split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase() %></div>
-                <div class="meta">
-                  <div class="n"><a href="/clients/<%= c.id %>"><%= c.name %></a></div>
-                  <div class="s"><%= c.company || '' %></div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <% if (c.sector) { %><span class="badge-mini sector"><span class="dot"></span><%= c.sector %></span><% } %>
-              <% if (c.industry) { %><div style="margin-top:3px;"><span class="badge-mini industry"><%= c.industry %></span></div><% } %>
-            </td>
-            <td>
-              <% (c.focus_areas || []).slice(0, 3).forEach(f => { %>
-                <span class="tag"><%= f %></span>
-              <% }) %>
-              <% if ((c.focus_areas||[]).length > 3) { %>
-                <span class="tag">+<%= c.focus_areas.length - 3 %></span>
-              <% } %>
-            </td>
-            <td>
-              <% const st = c.intro_status || 'not_contacted'; %>
-              <% if (st === 'engaged' || st === 'won') { %>
-                <span class="pill green"><span class="dot"></span><%= st %></span>
-              <% } else if (st === 'intro_sent') { %>
-                <span class="pill blue"><span class="dot"></span>Intro sent</span>
-              <% } else if (st === 'pending') { %>
-                <span class="pill yellow"><span class="dot"></span>Pending review</span>
-              <% } else { %>
-                <span class="pill gray"><span class="dot"></span>Not contacted</span>
-              <% } %>
-            </td>
-            <td>
-              <% const n = (c.ai_solutions||[]).length; %>
-              <% if (n > 0) { %>
-                <span class="badge-mini count"><i class="bi bi-stars"></i> <%= n %> matched</span>
-              <% } else { %>
-                <span class="text-muted" style="font-size:12px;">—</span>
-              <% } %>
-            </td>
-            <td>
-              <div class="row-actions">
-                <a class="btn icon-only sm" href="/clients/<%= c.id %>" title="View"><i class="bi bi-eye"></i></a>
-                <a class="btn icon-only sm" href="/clients/<%= c.id %>/intro" title="Generate intro"><i class="bi bi-file-text"></i></a>
-                <a class="btn icon-only sm" href="/clients/<%= c.id %>/edit" title="Edit"><i class="bi bi-pencil"></i></a>
-              </div>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-    </div>
+          </div>
+        </div>
+        <div class="cu-cell">
+          <div class="cu-cell-truncate"><%= c.sector || '—' %></div>
+          <div class="cu-cell-sub cu-cell-truncate"><%= c.industry || '' %></div>
+        </div>
+        <div class="cu-cell">
+          <span class="cu-status-dot <%= st %>"></span>
+          <% if (st === 'engaged' || st === 'won') { %>
+            <span class="pill green sm"><%= st === 'won' ? 'Won' : 'Engaged' %></span>
+          <% } else if (st === 'intro_sent') { %>
+            <span class="pill blue sm">Intro sent</span>
+          <% } else if (st === 'pending') { %>
+            <span class="pill yellow sm">Pending</span>
+          <% } else { %>
+            <span class="pill gray sm">Not contacted</span>
+          <% } %>
+        </div>
+        <div class="cu-cell">
+          <div class="cu-cell-tags">
+            <% (c.focus_areas || []).slice(0, 2).forEach(f => { %>
+              <span class="tag"><%= f %></span>
+            <% }) %>
+            <% if ((c.focus_areas||[]).length > 2) { %>
+              <span class="tag more">+<%= c.focus_areas.length - 2 %></span>
+            <% } %>
+          </div>
+        </div>
+        <div class="cu-cell">
+          <% if (c.last_contact_at) { %>
+            <div class="cu-cell-truncate"><%= c.last_contact_at %></div>
+          <% } else { %>
+            <div class="cu-cell-sub">—</div>
+          <% } %>
+        </div>
+        <div class="cu-cell" style="text-align: right;">
+          <% const n = (c.ai_solutions||[]).length; %>
+          <% if (n > 0) { %>
+            <span class="pill purple sm"><i class="bi bi-stars"></i> <%= n %></span>
+          <% } else { %>
+            <span class="cu-cell-sub">—</span>
+          <% } %>
+        </div>
+      </a>
+    <% }) %>
   </div>
 
 </div>

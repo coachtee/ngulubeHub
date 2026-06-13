@@ -44,11 +44,22 @@ function remove(id) {
   return db.prepare('DELETE FROM users WHERE id = ?').run(id);
 }
 
+function update(id, { name, role, username }) {
+  // Update name, role, username (password is changed separately via changePassword)
+  const cur = getById(id);
+  if (!cur) return null;
+  const newName = (typeof name === 'string' && name.trim()) ? name.trim() : cur.name;
+  const newRole = (role === 'superadmin' || role === 'admin') ? role : cur.role;
+  const newUsername = (typeof username === 'string' && username.trim()) ? username.trim().toLowerCase() : cur.username;
+  db.prepare('UPDATE users SET name = ?, role = ?, username = ? WHERE id = ?').run(newName, newRole, newUsername, id);
+  return getById(id);
+}
+
 function changePassword(id, newPassword) {
   const hash = bcrypt.hashSync(newPassword, SALT_ROUNDS);
   return db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, id);
 }
 
 module.exports = {
-  getById, getByUsername, listAll, countAll, create, verifyPassword, remove, changePassword,
+  getById, getByUsername, listAll, countAll, create, verifyPassword, remove, update, changePassword,
 };

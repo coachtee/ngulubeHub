@@ -1,32 +1,85 @@
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="document.querySelector('.sidebar').classList.remove('open');this.classList.remove('open');"></div>
 <aside class="sidebar" id="sidebar">
-  <div class="brand">
-    <img src="/img/logo-pig.svg" alt="NgulubeHub" class="brand-logo">
-    <span>NgulubeHub</span>
-  </div>
-
   <% if (typeof user !== 'undefined' && user) { %>
+    <!-- Workspace header (ClickUp-style) -->
+    <div class="cu-ws-head">
+      <div class="cu-ws-logo">N</div>
+      <div class="cu-ws-meta">
+        <div class="cu-ws-name">NgulubeHub</div>
+        <div class="cu-ws-plan">Workspace</div>
+      </div>
+      <button class="cu-ws-toggle" type="button" title="Toggle sidebar">
+        <i class="bi bi-chevron-double-left"></i>
+      </button>
+    </div>
+
     <nav class="nav">
-      <a class="nav-item <%= (typeof active !== 'undefined' && active==='dashboard')?'active':'' %>" href="/dashboard"><i class="bi bi-columns-gap"></i> Dashboard</a>
-      <a class="nav-item <%= (typeof active !== 'undefined' && active==='projects')?'active':'' %>" href="/projects"><i class="bi bi-kanban"></i> Projects</a>
-      <a class="nav-item <%= (typeof active !== 'undefined' && active==='tasks')?'active':'' %>" href="/tasks"><i class="bi bi-check2-square"></i> My Tasks</a>
-      <a class="nav-item <%= (typeof active !== 'undefined' && active==='calendar')?'active':'' %>" href="/calendar"><i class="bi bi-calendar3"></i> Calendar</a>
-      <a class="nav-item <%= (typeof active !== 'undefined' && active==='new')?'active':'' %>" href="/clients/new"><i class="bi bi-person-plus"></i> Add Client</a>
-      <a class="nav-item <%= (typeof active !== 'undefined' && active==='catalog')?'active':'' %>" href="/catalog"><i class="bi bi-stars"></i> AI Solutions</a>
-      <a class="nav-item <%= (typeof active !== 'undefined' && active==='join')?'active':'' %>" href="/join" target="_blank" rel="noopener"><i class="bi bi-link-45deg"></i> Join Form</a>
+      <a class="nav-item <%= (typeof active !== 'undefined' && active==='dashboard')?'active':'' %>" href="/dashboard">
+        <i class="bi bi-house-door"></i><span>Home</span>
+      </a>
+      <a class="nav-item <%= (typeof active !== 'undefined' && active==='calendar')?'active':'' %>" href="/calendar">
+        <i class="bi bi-calendar3"></i><span>Calendar</span>
+      </a>
+      <a class="nav-item <%= (typeof active !== 'undefined' && active==='new')?'active':'' %>" href="/clients/new">
+        <i class="bi bi-person-plus"></i><span>Add Client</span>
+      </a>
+      <a class="nav-item <%= (typeof active !== 'undefined' && active==='import')?'active':'' %>" href="/import">
+        <i class="bi bi-upload"></i><span>Import</span>
+      </a>
     </nav>
 
-    <div class="nav-section">Pipeline</div>
+    <div class="nav-section">
+      <span>Work</span>
+    </div>
     <nav class="nav">
-      <a class="nav-item <%= (typeof active !== 'undefined' && active==='not_contacted')?'active':'' %>" href="/pipeline/not-contacted"><i class="bi bi-hourglass"></i> Not Contacted</a>
-      <a class="nav-item <%= (typeof active !== 'undefined' && active==='intro_sent')?'active':'' %>" href="/pipeline/intro-sent"><i class="bi bi-send"></i> Intro Sent</a>
-      <a class="nav-item <%= (typeof active !== 'undefined' && active==='engaged')?'active':'' %>" href="/pipeline/engaged"><i class="bi bi-handshake"></i> Engaged / Won</a>
+      <a class="nav-item <%= (typeof active !== 'undefined' && active==='clients')?'active':'' %>" href="/">
+        <i class="bi bi-people"></i><span>All Clients</span>
+        <span class="cu-nav-count"><%= typeof stats !== 'undefined' ? stats.total : '' %></span>
+      </a>
+      <a class="nav-item <%= (typeof active !== 'undefined' && active==='projects')?'active':'' %>" href="/projects">
+        <i class="bi bi-kanban"></i><span>Projects</span>
+      </a>
+      <a class="nav-item <%= (typeof active !== 'undefined' && active==='tasks')?'active':'' %>" href="/tasks">
+        <i class="bi bi-check2-square"></i><span>My Tasks</span>
+      </a>
+      <a class="nav-item <%= (typeof active !== 'undefined' && active==='catalog')?'active':'' %>" href="/catalog">
+        <i class="bi bi-stars"></i><span>AI Solutions</span>
+      </a>
+    </nav>
+
+    <div class="nav-section">
+      <span>Pipeline</span>
+    </div>
+    <nav class="nav">
+      <a class="nav-item <%= (typeof active !== 'undefined' && active==='not_contacted')?'active':'' %>" href="/pipeline/not-contacted">
+        <i class="bi bi-hourglass"></i><span>Not Contacted</span>
+        <span class="cu-nav-count"><%= typeof stats !== 'undefined' ? stats.notContacted : '' %></span>
+      </a>
+      <a class="nav-item <%= (typeof active !== 'undefined' && active==='intro_sent')?'active':'' %>" href="/pipeline/intro-sent">
+        <i class="bi bi-send"></i><span>Intro Sent</span>
+      </a>
+      <a class="nav-item <%= (typeof active !== 'undefined' && active==='engaged')?'active':'' %>" href="/pipeline/engaged">
+        <i class="bi bi-handshake"></i><span>Engaged / Won</span>
+      </a>
+    </nav>
+
+    <div class="nav-section">
+      <span>Public</span>
+    </div>
+    <nav class="nav">
+      <a class="nav-item" href="/join" target="_blank" rel="noopener">
+        <i class="bi bi-link-45deg"></i><span>Join Form</span>
+      </a>
     </nav>
 
     <% if (user.role === 'superadmin') { %>
-      <div class="nav-section">Admin</div>
+      <div class="nav-section">
+        <span>Admin</span>
+      </div>
       <nav class="nav">
-        <a class="nav-item <%= (typeof active !== 'undefined' && active==='users')?'active':'' %>" href="/admin/users"><i class="bi bi-shield-lock"></i> Manage Admins</a>
+        <a class="nav-item <%= (typeof active !== 'undefined' && active==='users')?'active':'' %>" href="/admin/users">
+          <i class="bi bi-shield-lock"></i><span>Manage Admins</span>
+        </a>
       </nav>
     <% } %>
 
@@ -37,10 +90,17 @@
         <div class="role"><%= user.role %></div>
       </div>
       <form method="POST" action="/logout" style="margin-left:auto;">
-        <button type="submit" class="btn ghost sm"><i class="bi bi-box-arrow-right"></i></button>
+        <button type="submit" class="btn ghost sm" title="Log out"><i class="bi bi-box-arrow-right"></i></button>
       </form>
     </div>
   <% } else { %>
+    <div class="cu-ws-head">
+      <div class="cu-ws-logo">N</div>
+      <div class="cu-ws-meta">
+        <div class="cu-ws-name">NgulubeHub</div>
+        <div class="cu-ws-plan">Workspace</div>
+      </div>
+    </div>
     <nav class="nav">
       <a class="nav-item" href="/login"><i class="bi bi-box-arrow-in-right"></i> Sign in</a>
       <a class="nav-item" href="/join"><i class="bi bi-link-45deg"></i> Join Form</a>

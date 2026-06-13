@@ -34,8 +34,11 @@
       display: flex; align-items: center; justify-content: center; gap: 10px;
       margin-bottom: 6px;
     }
-    .auth-card .brand img { width: 28px; height: 28px; }
-    .auth-card .brand .word { font-size: 16px; font-weight: 700; color: var(--brand); }
+    .auth-card .brand .word {
+      font-size: 20px; font-weight: 800; color: var(--brand);
+      letter-spacing: -0.02em;
+    }
+    .auth-card .brand .word::first-letter { color: var(--accent); }
     .auth-card h1 {
       font-size: 22px; font-weight: 600;
       text-align: center;
@@ -125,7 +128,6 @@
   <div class="auth-shell">
     <div class="auth-card">
       <div class="brand">
-        <img src="/img/logo-pig.svg" alt="">
         <span class="word">NgulubeHub</span>
       </div>
       <h1>Welcome to Ngulube Hub</h1>

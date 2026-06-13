@@ -1,0 +1,152 @@
+<% const title = 'Board — NgulubeHub'; const active = 'board'; %>
+<%- include('partials/head', { title, active }) %>
+<div class="app-shell">
+<%- include('partials/nav') %>
+<main class="main">
+<%- include('partials/topbar') %>
+<div class="content">
+
+  <div class="cu-page-head">
+    <i class="bi bi-house-door"></i><span>Home</span>
+    <i class="bi bi-chevron-right" style="font-size: 9px;"></i>
+    <span>Board</span>
+  </div>
+  <header class="d-flex flex-wrap justify-between items-center mb-3" style="gap: 12px;">
+    <div>
+      <h1 class="cu-page-title"><i class="bi bi-kanban"></i> Client Board</h1>
+      <p class="cu-page-sub">All <strong><%= Object.values(buckets).reduce((a,b)=>a+b.length,0) %></strong> clients grouped by pipeline status.</p>
+    </div>
+    <div class="cu-page-actions">
+      <a class="btn" href="/"><i class="bi bi-list-ul"></i> List view</a>
+      <a class="btn primary" href="/clients/new"><i class="bi bi-plus-lg"></i> Add Client</a>
+    </div>
+  </header>
+
+  <form class="cu-toolbar" method="get" action="/board">
+    <div class="cu-search">
+      <i class="bi bi-search"></i>
+      <input name="q" placeholder="Search by name, company, bio…" value="<%= q %>">
+    </div>
+    <button class="btn" type="submit"><i class="bi bi-funnel"></i> Filter</button>
+    <% if (q) { %><a class="btn ghost" href="/board">Clear</a><% } %>
+  </form>
+
+  <div class="cu-views">
+    <a href="/"><i class="bi bi-list-ul"></i> List</a>
+    <a class="active" href="/board"><i class="bi bi-kanban"></i> Board <span class="cu-view-count"><%= Object.values(buckets).reduce((a,b)=>a+b.length,0) %></span></a>
+    <a href="/calendar"><i class="bi bi-calendar3"></i> Calendar</a>
+  </div>
+
+  <div class="board-wrap">
+    <div class="board-col" data-status="not_contacted">
+      <div class="board-col-head">
+        <span class="cu-status-dot not_contacted"></span>
+        <strong>Not contacted</strong>
+        <span class="cu-nav-count"><%= buckets.not_contacted.length %></span>
+      </div>
+      <div class="board-col-body">
+        <% buckets.not_contacted.forEach(c => { %>
+          <a class="board-card" href="/clients/<%= c.id %>">
+            <div class="board-card-title"><%= c.name %></div>
+            <% if (c.company) { %><div class="board-card-sub"><%= c.company %></div><% } %>
+            <div class="board-card-meta">
+              <% if (c.sector) { %><span class="tag"><%= c.sector %></span><% } %>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="board-col" data-status="pending">
+      <div class="board-col-head">
+        <span class="cu-status-dot pending"></span>
+        <strong>Pending review</strong>
+        <span class="cu-nav-count"><%= buckets.pending.length %></span>
+      </div>
+      <div class="board-col-body">
+        <% buckets.pending.forEach(c => { %>
+          <a class="board-card" href="/clients/<%= c.id %>">
+            <div class="board-card-title"><%= c.name %></div>
+            <% if (c.company) { %><div class="board-card-sub"><%= c.company %></div><% } %>
+            <div class="board-card-meta">
+              <% if (c.sector) { %><span class="tag"><%= c.sector %></span><% } %>
+            </div>
+          </a>
+        <% }) %>
+        <% if (!buckets.pending.length) { %>
+          <div class="board-empty">No pending</div>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="board-col" data-status="intro_sent">
+      <div class="board-col-head">
+        <span class="cu-status-dot intro_sent"></span>
+        <strong>Intro sent</strong>
+        <span class="cu-nav-count"><%= buckets.intro_sent.length %></span>
+      </div>
+      <div class="board-col-body">
+        <% buckets.intro_sent.forEach(c => { %>
+          <a class="board-card" href="/clients/<%= c.id %>">
+            <div class="board-card-title"><%= c.name %></div>
+            <% if (c.company) { %><div class="board-card-sub"><%= c.company %></div><% } %>
+            <div class="board-card-meta">
+              <% if (c.sector) { %><span class="tag"><%= c.sector %></span><% } %>
+            </div>
+          </a>
+        <% }) %>
+        <% if (!buckets.intro_sent.length) { %>
+          <div class="board-empty">No intros sent</div>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="board-col" data-status="engaged">
+      <div class="board-col-head">
+        <span class="cu-status-dot engaged"></span>
+        <strong>Engaged</strong>
+        <span class="cu-nav-count"><%= buckets.engaged.length %></span>
+      </div>
+      <div class="board-col-body">
+        <% buckets.engaged.forEach(c => { %>
+          <a class="board-card" href="/clients/<%= c.id %>">
+            <div class="board-card-title"><%= c.name %></div>
+            <% if (c.company) { %><div class="board-card-sub"><%= c.company %></div><% } %>
+            <div class="board-card-meta">
+              <% if (c.sector) { %><span class="tag"><%= c.sector %></span><% } %>
+            </div>
+          </a>
+        <% }) %>
+        <% if (!buckets.engaged.length) { %>
+          <div class="board-empty">No engagement</div>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="board-col" data-status="won">
+      <div class="board-col-head">
+        <span class="cu-status-dot won"></span>
+        <strong>Won</strong>
+        <span class="cu-nav-count"><%= buckets.won.length %></span>
+      </div>
+      <div class="board-col-body">
+        <% buckets.won.forEach(c => { %>
+          <a class="board-card" href="/clients/<%= c.id %>">
+            <div class="board-card-title"><%= c.name %></div>
+            <% if (c.company) { %><div class="board-card-sub"><%= c.company %></div><% } %>
+            <div class="board-card-meta">
+              <% if (c.sector) { %><span class="tag"><%= c.sector %></span><% } %>
+            </div>
+          </a>
+        <% }) %>
+        <% if (!buckets.won.length) { %>
+          <div class="board-empty">No wins yet</div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+</div>
+</main>
+</div>
+<%- include('partials/foot') %>

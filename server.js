@@ -170,6 +170,32 @@ app.post('/admin/users', requireAuth, requireSuperadmin, (req, res) => {
   res.redirect('/admin/users');
 });
 
+app.get('/admin/users/:id/edit', requireAuth, requireSuperadmin, (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const target = users.getById(id);
+  if (!target) {
+    flash(req, 'error', 'User not found.');
+    return res.redirect('/admin/users');
+  }
+  res.render('admin-user-edit', { target, active: 'users', title: 'Edit ' + (target.name || target.username) + ' — Ngulube Hub' });
+});
+
+app.post('/admin/users/:id/edit', requireAuth, requireSuperadmin, (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { name, username, role } = req.body;
+  try {
+    const updated = users.update(id, { name, username, role });
+    if (!updated) {
+      flash(req, 'error', 'User not found.');
+      return res.redirect('/admin/users');
+    }
+    flash(req, 'success', 'User updated.');
+  } catch (e) {
+    flash(req, 'error', 'Could not update: ' + e.message);
+  }
+  res.redirect('/admin/users');
+});
+
 app.post('/admin/users/:id/delete', requireAuth, requireSuperadmin, (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (id === req.session.user.id) {
@@ -288,6 +314,34 @@ function pipelineHandler(slug) {
 app.get('/pipeline/not-contacted', requireAuth, pipelineHandler('not-contacted'));
 app.get('/pipeline/intro-sent',    requireAuth, pipelineHandler('intro-sent'));
 app.get('/pipeline/engaged',       requireAuth, pipelineHandler('engaged'));
+
+// Board view (ClickUp-style kanban) — all clients grouped by status
+app.get('/board', requireAuth, (req, res) => {
+  const q = (req.query.q || '').trim();
+  let sql = 'SELECT * FROM clients';
+  const args = [];
+  if (q) {
+    sql += ' WHERE name LIKE ? OR company LIKE ? OR bio LIKE ?';
+    args.push(`%${q}%`, `%${q}%`, `%${q}%`);
+  }
+  sql += ' ORDER BY name';
+  const rows = db.prepare(sql).all(...args).map(c => ({
+    ...c,
+    focus_areas: safeJson(c.focus_areas, []),
+    pain_points: safeJson(c.pain_points, []),
+    ai_solutions: safeJson(c.ai_solutions, []),
+    tags: safeJson(c.tags, []),
+  }));
+  // Bucket by status
+  const buckets = {
+    not_contacted: rows.filter(c => !c.intro_status || c.intro_status === 'Not contacted' || c.intro_status === 'not_contacted'),
+    pending: rows.filter(c => c.intro_status === 'Pending review' || c.intro_status === 'pending'),
+    intro_sent: rows.filter(c => c.intro_status === 'Intro sent' || c.intro_status === 'intro_sent'),
+    engaged: rows.filter(c => c.intro_status === 'Engaged' || c.intro_status === 'engaged'),
+    won: rows.filter(c => c.intro_status === 'Won' || c.intro_status === 'won'),
+  };
+  res.render('board', { buckets, q, active: 'board', title: 'Board — NgulubeHub' });
+});
 
 app.get('/clients/new', requireAuth, (req, res) => {
   const sectors = ['Finance', 'Banking', 'Insurance', 'Healthcare', 'IT Services', 'Cybersecurity', 'Construction', 'Engineering', 'Architecture', 'Creative', 'Marketing', 'Real Estate', 'HR Services', 'Telecommunications', 'Accounting', 'Fashion', 'Energy', 'Education', 'Other'];

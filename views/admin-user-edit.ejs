@@ -1,0 +1,64 @@
+<% const title = 'Edit ' + (target.name || target.username) + ' — Ngulube Hub'; const active = 'admin'; %>
+<%- include('partials/head', { title, active }) %>
+<div class="app-shell">
+<%- include('partials/nav') %>
+<main class="main">
+<%- include('partials/topbar') %>
+<div class="content">
+
+  <a href="/admin/users" class="text-muted" style="font-size: 12px;"><i class="bi bi-arrow-left"></i> Back to Admin Users</a>
+  <h1 style="font-size: 22px; font-weight: 700; margin: 6px 0 18px;">
+    <i class="bi bi-pencil-square"></i> Edit <%= target.name || target.username %>
+  </h1>
+
+  <% if (typeof flash !== 'undefined' && flash) { %>
+    <div class="alert <%= flash.type === 'error' ? 'alert-danger' : 'alert-success' %>" style="border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px;">
+      <i class="bi bi-<%= flash.type === 'error' ? 'exclamation-triangle' : 'check-circle' %>"></i> <%= flash.message %>
+    </div>
+  <% } %>
+
+  <div style="display: grid; grid-template-columns: 1fr 360px; gap: 16px; max-width: 900px;">
+    <div class="panel">
+      <div class="panel-head"><i class="bi bi-person-vcard"></i> Account details</div>
+      <div class="panel-body">
+        <form method="post" action="/admin/users/<%= target.id %>/edit">
+          <div class="form-group mb-3">
+            <label>Full name</label>
+            <input name="name" required value="<%= target.name || '' %>" placeholder="e.g. Hulisani">
+          </div>
+          <div class="form-group mb-3">
+            <label>Username</label>
+            <input name="username" required pattern="[a-zA-Z0-9_-]{3,30}" value="<%= target.username %>" placeholder="lowercase, no spaces">
+            <small class="text-muted">Changing the username will require them to log in with the new name.</small>
+          </div>
+          <div class="form-group mb-3">
+            <label>Role</label>
+            <select name="role">
+              <option value="admin" <%= target.role === 'admin' ? 'selected' : '' %>>Admin (read/write data)</option>
+              <option value="superadmin" <%= target.role === 'superadmin' ? 'selected' : '' %>>Super-admin (can add/remove admins)</option>
+            </select>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn primary"><i class="bi bi-check-lg"></i> Save Changes</button>
+            <a href="/admin/users" class="btn ghost">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><i class="bi bi-info-circle"></i> Info</div>
+      <div class="panel-body" style="font-size: 13px;">
+        <div class="mb-2"><strong>User ID:</strong> <%= target.id %></div>
+        <div class="mb-2"><strong>Created:</strong> <%= target.created_at ? target.created_at.slice(0, 10) : '—' %></div>
+        <div class="mb-2"><strong>Last login:</strong> <%= target.last_login_at ? target.last_login_at.slice(0, 16).replace('T', ' ') : '—' %></div>
+        <hr style="margin: 14px 0; border: 0; border-top: 1px solid var(--border);">
+        <p class="text-muted mb-2">To reset this user's password, go back and click the <i class="bi bi-key"></i> icon on their row.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</main>
+</div>
+<%- include('partials/foot') %>
