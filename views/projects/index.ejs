@@ -1,0 +1,185 @@
+<% const title = locals.title || 'Projects — Ngulube Hub'; const active = locals.active || 'projects'; %>
+<%- include('../partials/head', { title, active }) %>
+<div class="app-shell">
+<%- include('../partials/nav') %>
+<main class="main">
+<%- include('../partials/topbar') %>
+<div class="content">
+
+  <header class="d-flex flex-wrap justify-between items-center mb-3" style="gap: 12px;">
+    <div>
+      <h1 style="font-size: 22px; font-weight: 700; margin: 0;"><i class="bi bi-kanban"></i> Projects</h1>
+      <p class="text-muted mb-0" style="font-size: 13px; margin-top: 2px;">
+        <strong><%= stats.active %></strong> active · <strong><%= stats.scoping %></strong> scoping · <strong><%= stats.quoted %></strong> quoted
+        · <strong><%= stats.onHold %></strong> on hold
+      </p>
+    </div>
+    <div class="d-flex gap-1 flex-wrap">
+      <div class="btn-group" style="display: inline-flex; gap: 0;">
+        <a class="btn <%= view === 'kanban' ? 'primary' : '' %>" href="?view=kanban"><i class="bi bi-kanban"></i> <span class="hidden-mobile">Kanban</span></a>
+        <a class="btn <%= view === 'list' ? 'primary' : '' %>" href="?view=list"><i class="bi bi-list-ul"></i> <span class="hidden-mobile">List</span></a>
+      </div>
+      <a class="btn primary" href="/projects/new"><i class="bi bi-plus-lg"></i> <span class="hidden-mobile">New</span> Project</a>
+    </div>
+  </header>
+
+  <!-- Stats strip -->
+  <div class="stats" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="stat">
+      <span class="label">Active Projects</span>
+      <span class="value"><%= stats.active %></span>
+      <span class="delta"><a href="?view=kanban">Open kanban</a></span>
+    </div>
+    <div class="stat warn">
+      <span class="label">Overdue Tasks</span>
+      <span class="value"><%= stats.overdueTasks %></span>
+      <span class="delta"><a href="/tasks">Review tasks</a></span>
+    </div>
+    <div class="stat">
+      <span class="label">Pipeline Value</span>
+      <span class="value" style="font-size: 20px;">R <%= Number(stats.totalValue).toLocaleString() %></span>
+      <span class="delta">across all open work</span>
+    </div>
+    <div class="stat good">
+      <span class="label">Closed (Won)</span>
+      <span class="value"><%= stats.closedWon %></span>
+      <span class="delta">delivered &amp; paid</span>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <form class="filterbar" method="get">
+    <input type="hidden" name="view" value="<%= view %>">
+    <div class="search-inline">
+      <i class="bi bi-search"></i>
+      <input name="q" placeholder="Search projects…" value="<%= search %>">
+    </div>
+    <div class="right">
+      <button class="btn" type="submit"><i class="bi bi-funnel"></i> Apply</button>
+      <% if (search) { %><a class="btn ghost" href="?view=<%= view %>">Clear</a><% } %>
+    </div>
+  </form>
+
+  <% if (view === 'list') { %>
+    <!-- LIST VIEW -->
+    <div class="table-card">
+      <div class="table-toolbar">
+        <span class="selection-info"><strong><%= allProjects.length %></strong> projects</span>
+      </div>
+      <div class="table-scroll">
+      <table class="t">
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Client</th>
+            <th>Owner</th>
+            <th>Status</th>
+            <th>Target</th>
+            <th>Value</th>
+            <th style="text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!allProjects.length) { %>
+            <tr><td colspan="7">
+              <div class="empty">
+                <i class="bi bi-inbox"></i>
+                <div class="t">No projects yet</div>
+                <div class="s">Try the <strong>idea inbox</strong> on the dashboard, or <a href="/projects/new">create a project</a>.</div>
+              </div>
+            </td></tr>
+          <% } %>
+          <% allProjects.forEach(p => { %>
+            <% const owner = allUsers.find(u => u.id === p.owner_id); %>
+            <% const client = p.client_id ? allClients.find(c => c.id === p.client_id) : null; %>
+            <tr>
+              <td>
+                <div class="n"><a href="/projects/<%= p.id %>"><%= p.name %></a></div>
+                <% if (p.description) { %><div class="s" style="font-size: 11.5px; color: var(--text-3); margin-top: 2px;"><%= p.description.slice(0, 80) %><%= p.description.length > 80 ? '…' : '' %></div><% } %>
+              </td>
+              <td>
+                <% if (client) { %>
+                  <a href="/clients/<%= client.id %>"><%= client.name %></a>
+                <% } else { %>
+                  <span class="text-muted" style="font-size: 12px;">—</span>
+                <% } %>
+              </td>
+              <td>
+                <span class="avatar sm"><%= (owner?.name || owner?.username || '?').slice(0,2).toUpperCase() %></span>
+                <span style="margin-left: 6px;"><%= owner?.name || owner?.username || '—' %></span>
+              </td>
+              <td>
+                <span class="pill <%= projects.PROJECT_STATUS_COLORS[p.status] || 'gray' %>">
+                  <span class="dot"></span><%= projects.PROJECT_STATUS_LABELS[p.status] || p.status %>
+                </span>
+              </td>
+              <td>
+                <% if (p.target_end_date) { %>
+                  <span style="font-size: 12px;"><%= p.target_end_date %></span>
+                <% } else { %>
+                  <span class="text-muted" style="font-size: 12px;">—</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (p.est_value_zar > 0) { %>
+                  <span style="font-weight: 600;">R <%= Number(p.est_value_zar).toLocaleString() %></span>
+                <% } else { %>
+                  <span class="text-muted" style="font-size: 12px;">—</span>
+                <% } %>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a class="btn icon-only sm" href="/projects/<%= p.id %>" title="View"><i class="bi bi-eye"></i></a>
+                  <a class="btn icon-only sm" href="/projects/<%= p.id %>/edit" title="Edit"><i class="bi bi-pencil"></i></a>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  <% } else { %>
+    <!-- KANBAN VIEW -->
+    <div class="kanban-board">
+      <% projects.KANBAN_COLUMNS.forEach(col => { %>
+        <% const items = grouped[col.id] || []; %>
+        <div class="kanban-col" data-status="<%= col.id %>">
+          <div class="kanban-col-head">
+            <span class="pill <%= col.color %>"><span class="dot"></span><%= col.title %></span>
+            <span class="count"><%= items.length %></span>
+          </div>
+          <div class="kanban-col-body">
+            <% if (!items.length) { %>
+              <div class="kanban-empty">No projects</div>
+            <% } %>
+            <% items.forEach(p => { %>
+              <% const client = p.client_id ? allClients.find(c => c.id === p.client_id) : null; %>
+              <a class="kanban-card" href="/projects/<%= p.id %>">
+                <div class="kc-title"><%= p.name %></div>
+                <% if (client) { %><div class="kc-client"><i class="bi bi-person"></i> <%= client.name %></div><% } %>
+                <% if (p.description) { %><div class="kc-desc"><%= p.description.slice(0, 100) %><%= p.description.length > 100 ? '…' : '' %></div><% } %>
+                <div class="kc-meta">
+                  <% if (p.target_end_date) { %><span class="kc-date"><i class="bi bi-calendar"></i> <%= p.target_end_date %></span><% } %>
+                  <% if (p.est_value_zar > 0) { %><span class="kc-value">R <%= Number(p.est_value_zar).toLocaleString() %></span><% } %>
+                  <% if (p.priority === 'urgent' || p.priority === 'high') { %>
+                    <span class="pill <%= p.priority === 'urgent' ? 'red' : 'orange' %>" style="font-size: 10px; padding: 1px 6px;">
+                      <span class="dot"></span><%= p.priority %>
+                    </span>
+                  <% } %>
+                </div>
+              </a>
+            <% }) %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+    <p class="text-muted" style="font-size: 12px; margin-top: 16px;">
+      <i class="bi bi-info-circle"></i> Closed projects (<%= stats.closedWon %> won, <%= stats.closedLost %> lost) are hidden from the kanban. <a href="?view=list">View all →</a>
+    </p>
+  <% } %>
+
+</div>
+</main>
+</div>
+<%- include('../partials/foot') %>

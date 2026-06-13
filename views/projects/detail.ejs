@@ -1,0 +1,253 @@
+<% const title = locals.title || project.name; const active = 'projects'; %>
+<%- include('../partials/head', { title, active }) %>
+<div class="app-shell">
+<%- include('../partials/nav') %>
+<main class="main">
+<%- include('../partials/topbar') %>
+<div class="content">
+
+  <% if (locals.flash) { %>
+    <div class="alert <%= flash.type === 'error' ? 'alert-danger' : 'alert-success' %>" style="background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px;">
+      <i class="bi bi-<%= flash.type === 'error' ? 'exclamation-triangle' : 'check-circle' %>"></i> <%= flash.message %>
+    </div>
+  <% } %>
+
+  <header class="profile-header">
+    <div class="who">
+      <a href="/projects" class="text-muted" style="font-size: 12px;"><i class="bi bi-arrow-left"></i> All projects</a>
+      <div class="name" style="margin-top: 2px;"><%= project.name %></div>
+      <% if (project.client_id) { %>
+        <% const client = allClients.find(c => c.id === project.client_id); %>
+        <% if (client) { %>
+          <div class="title">
+            <i class="bi bi-link-45deg"></i> <a href="/clients/<%= client.id %>"><%= client.name %><%= client.company ? ' · ' + client.company : '' %></a>
+          </div>
+        <% } %>
+      <% } %>
+      <div class="meta-row">
+        <span class="pill <%= projects.PROJECT_STATUS_COLORS[project.status] || 'gray' %>">
+          <span class="dot"></span><%= projects.PROJECT_STATUS_LABELS[project.status] %>
+        </span>
+        <% if (project.priority !== 'normal') { %>
+          <span class="pill <%= project.priority === 'urgent' ? 'red' : project.priority === 'high' ? 'orange' : 'gray' %>">
+            <span class="dot"></span><%= project.priority %> priority
+          </span>
+        <% } %>
+        <% if (project.risk_level !== 'low') { %>
+          <span class="pill <%= project.risk_level === 'high' ? 'red' : 'yellow' %>">
+            <i class="bi bi-exclamation-triangle"></i> Risk: <%= project.risk_level %>
+          </span>
+        <% } %>
+        <% if (project.target_end_date) { %>
+          <span class="badge-mini industry"><i class="bi bi-calendar"></i> <%= project.target_end_date %></span>
+        <% } %>
+        <% if (project.est_value_zar > 0) { %>
+          <span class="badge-mini count">R <%= Number(project.est_value_zar).toLocaleString() %></span>
+        <% } %>
+      </div>
+    </div>
+    <div class="actions">
+      <!-- Status changer -->
+      <form method="POST" action="/projects/<%= project.id %>/status" style="display: inline;">
+        <input type="hidden" name="back" value="/projects/<%= project.id %>">
+        <select name="status" onchange="this.form.submit()" style="height: 32px; padding: 0 28px 0 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 6px; font-size: 13px;">
+          <% projects.PROJECT_STATUSES.forEach(s => { %>
+            <option value="<%= s %>" <%= project.status === s ? 'selected' : '' %>><%= projects.PROJECT_STATUS_LABELS[s] %></option>
+          <% }) %>
+        </select>
+      </form>
+      <a class="btn" href="/projects/<%= project.id %>/edit"><i class="bi bi-pencil"></i> <span class="hidden-mobile">Edit</span></a>
+      <form method="POST" action="/projects/<%= project.id %>/archive" style="display: inline;" onsubmit="return confirm('Archive this project? You can find it in the archive later.')">
+        <button class="btn" type="submit"><i class="bi bi-archive"></i></button>
+      </form>
+      <form method="POST" action="/projects/<%= project.id %>/delete" style="display: inline;" onsubmit="return confirm('Delete this project and all its tasks? This cannot be undone.')">
+        <button class="btn danger icon-only" type="submit"><i class="bi bi-trash"></i></button>
+      </form>
+    </div>
+  </header>
+
+  <!-- Progress bar -->
+  <% if (project.stats.total > 0) { %>
+    <div class="panel mb-3">
+      <div class="panel-body" style="padding: 14px 18px;">
+        <div class="d-flex items-center justify-between" style="margin-bottom: 6px;">
+          <span style="font-size: 12px; color: var(--text-2);">Task progress</span>
+          <span style="font-size: 12px; color: var(--text-2);"><strong><%= project.stats.done %></strong> / <%= project.stats.total %> done · <%= project.stats.completion %>%</span>
+        </div>
+        <div style="height: 6px; background: var(--surface-2); border-radius: 999px; overflow: hidden;">
+          <div style="height: 100%; width: <%= project.stats.completion %>%; background: var(--green); transition: width 0.3s;"></div>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Two-column layout: Tasks (left) + Sidebar (right) -->
+  <div class="project-grid">
+    <!-- Tasks column -->
+    <div>
+      <div class="panel">
+        <div class="panel-head">
+          <i class="bi bi-check2-square"></i> Tasks (<%= project.tasks.length %>)
+          <div class="right">
+            <button class="btn primary sm" onclick="document.getElementById('newTaskForm').style.display='block'">
+              <i class="bi bi-plus-lg"></i> <span class="hidden-mobile">Add</span> task
+            </button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <!-- New task form (hidden by default) -->
+          <form id="newTaskForm" method="POST" action="/projects/<%= project.id %>/tasks" style="display: none; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 16px;">
+            <input type="hidden" name="back" value="/projects/<%= project.id %>">
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px;">
+              <input name="title" required placeholder="What needs to be done?" style="height: 36px; padding: 6px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text);">
+              <select name="assignee_id" style="height: 36px; padding: 0 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text);">
+                <option value="">Assign to…</option>
+                <% allUsers.forEach(u => { %>
+                  <option value="<%= u.id %>"><%= u.name || u.username %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+              <select name="priority" style="height: 32px; padding: 0 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 12.5px;">
+                <option value="low">Low</option>
+                <option value="normal" selected>Normal</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+              <input type="date" name="due_date" style="height: 32px; padding: 0 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 12.5px;">
+              <input type="number" step="0.5" name="estimated_hours" placeholder="Est. hours" style="height: 32px; padding: 0 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 12.5px;">
+            </div>
+            <textarea name="description" placeholder="Description / deliverable (optional)" rows="2" style="width: 100%; padding: 6px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; margin-bottom: 10px;"></textarea>
+            <div class="d-flex gap-1">
+              <button type="submit" class="btn primary sm"><i class="bi bi-plus-lg"></i> Add</button>
+              <button type="button" class="btn ghost sm" onclick="document.getElementById('newTaskForm').style.display='none'">Cancel</button>
+            </div>
+          </form>
+
+          <% if (!project.tasks.length) { %>
+            <div class="empty">
+              <i class="bi bi-check2-square"></i>
+              <div class="t">No tasks yet</div>
+              <div class="s">Add the first task to start tracking work.</div>
+            </div>
+          <% } %>
+
+          <% project.tasks.forEach(t => { %>
+            <% const overdue = t.due_date && t.due_date < new Date().toISOString().slice(0,10) && t.status !== 'done' && t.status !== 'cancelled'; %>
+            <div class="task-item <%= t.status === 'done' ? 'task-done' : '' %>" id="task-<%= t.id %>">
+              <div class="task-check">
+                <% if (t.status === 'done') { %>
+                  <i class="bi bi-check-circle-fill" style="color: var(--green); font-size: 20px;"></i>
+                <% } else { %>
+                  <form method="POST" action="/tasks/<%= t.id %>/status" style="display: inline;">
+                    <input type="hidden" name="status" value="done">
+                    <input type="hidden" name="back" value="/projects/<%= project.id %>">
+                    <button type="submit" style="background: none; border: none; cursor: pointer; padding: 0;">
+                      <i class="bi bi-circle" style="color: var(--text-3); font-size: 20px;"></i>
+                    </button>
+                  </form>
+                <% } %>
+              </div>
+              <div class="task-body">
+                <div class="task-title">
+                  <%= t.title %>
+                  <% if (t.priority === 'urgent') { %><span class="pill red" style="font-size: 10px; padding: 1px 6px; margin-left: 4px;">urgent</span><% } %>
+                  <% if (t.priority === 'high') { %><span class="pill orange" style="font-size: 10px; padding: 1px 6px; margin-left: 4px;">high</span><% } %>
+                </div>
+                <% if (t.description) { %><div class="task-desc"><%= t.description %></div><% } %>
+                <div class="task-meta">
+                  <% if (t.due_date) { %>
+                    <span class="task-due <%= overdue ? 'task-overdue' : '' %>">
+                      <i class="bi bi-calendar"></i> <%= t.due_date %><%= overdue ? ' (overdue)' : '' %>
+                    </span>
+                  <% } %>
+                  <% if (t.assignee_username) { %>
+                    <span class="task-assignee">
+                      <i class="bi bi-person"></i> <%= t.assignee_name || t.assignee_username %>
+                    </span>
+                  <% } %>
+                  <% if (t.estimated_hours) { %>
+                    <span><i class="bi bi-clock"></i> <%= t.estimated_hours %>h est</span>
+                  <% } %>
+                </div>
+                <% if (t.status === 'blocked' && t.blocked_reason) { %>
+                  <div class="task-blocked"><i class="bi bi-exclamation-triangle"></i> <%= t.blocked_reason %></div>
+                <% } %>
+              </div>
+              <div class="task-actions">
+                <form method="POST" action="/tasks/<%= t.id %>/status" style="display: inline;">
+                  <input type="hidden" name="back" value="/projects/<%= project.id %>">
+                  <select name="status" onchange="this.form.submit()" style="height: 26px; padding: 0 22px 0 8px; font-size: 11.5px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text);">
+                    <% projects.TASK_STATUSES.forEach(s => { %>
+                      <option value="<%= s %>" <%= t.status === s ? 'selected' : '' %>><%= projects.TASK_STATUS_LABELS[s] %></option>
+                    <% }) %>
+                  </select>
+                </form>
+                <% if (t.status !== 'done' && t.status !== 'cancelled') { %>
+                  <form method="POST" action="/tasks/<%= t.id %>/delete" style="display: inline;" onsubmit="return confirm('Delete this task?')">
+                    <input type="hidden" name="back" value="/projects/<%= project.id %>">
+                    <button type="submit" class="btn ghost icon-only sm"><i class="bi bi-trash"></i></button>
+                  </form>
+                <% } %>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar column -->
+    <div>
+      <% if (project.description || project.problem || project.success_criteria) { %>
+        <div class="panel mb-3">
+          <div class="panel-head"><i class="bi bi-info-circle"></i> Overview</div>
+          <div class="panel-body">
+            <% if (project.problem) { %>
+              <h6 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); margin: 0 0 4px;">Why</h6>
+              <p style="font-size: 13px; color: var(--text); margin: 0 0 14px;"><%= project.problem %></p>
+            <% } %>
+            <% if (project.description) { %>
+              <h6 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); margin: 0 0 4px;">What</h6>
+              <p style="font-size: 13px; color: var(--text); margin: 0 0 14px;"><%= project.description %></p>
+            <% } %>
+            <% if (project.success_criteria) { %>
+              <h6 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); margin: 0 0 4px;">Done looks like</h6>
+              <p style="font-size: 13px; color: var(--text); margin: 0;"><%= project.success_criteria %></p>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (project.risks) { %>
+        <div class="panel mb-3">
+          <div class="panel-head"><i class="bi bi-exclamation-triangle"></i> Risks</div>
+          <div class="panel-body">
+            <p style="font-size: 13px; color: var(--text); white-space: pre-wrap; margin: 0;"><%= project.risks %></p>
+          </div>
+        </div>
+      <% } %>
+
+      <div class="panel">
+        <div class="panel-head"><i class="bi bi-clock-history"></i> Activity</div>
+        <div class="panel-body">
+          <% if (!project.activity.length) { %>
+            <p class="text-muted mb-0" style="font-size: 13px;">No activity yet.</p>
+          <% } %>
+          <% project.activity.forEach(a => { %>
+            <div class="act-item">
+              <div class="meta">
+                <i class="bi bi-clock"></i> <%= a.created_at.slice(0, 16).replace('T', ' ') %>
+                <% if (a.username) { %> · <strong><%= a.name || a.username %></strong><% } %>
+              </div>
+              <div class="body"><%= a.summary %></div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</main>
+</div>
+<%- include('../partials/foot') %>

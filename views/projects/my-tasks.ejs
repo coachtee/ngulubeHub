@@ -1,0 +1,130 @@
+<% const title = 'My Tasks — Ngulube Hub'; const active = 'tasks'; %>
+<%- include('../partials/head', { title, active }) %>
+<div class="app-shell">
+<%- include('../partials/nav') %>
+<main class="main">
+<%- include('../partials/topbar') %>
+<div class="content">
+
+  <header class="d-flex flex-wrap justify-between items-center mb-3" style="gap: 12px;">
+    <div>
+      <h1 style="font-size: 22px; font-weight: 700; margin: 0;"><i class="bi bi-check2-square"></i> My Tasks</h1>
+      <p class="text-muted mb-0" style="font-size: 13px; margin-top: 2px;"><%= myTasks.length %> open task<%= myTasks.length === 1 ? '' : 's' %> assigned to you</p>
+    </div>
+  </header>
+
+  <% const today = new Date().toISOString().slice(0, 10); %>
+  <% const inAWeek = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10); %>
+  <% const overdue = myTasks.filter(t => t.due_date && t.due_date < today); %>
+  <% const thisWeek = myTasks.filter(t => t.due_date && t.due_date >= today && t.due_date <= inAWeek); %>
+  <% const later = myTasks.filter(t => !t.due_date || t.due_date > inAWeek); %>
+
+  <% if (!myTasks.length) { %>
+    <div class="empty">
+      <i class="bi bi-check2-all" style="font-size: 48px; opacity: 0.2;"></i>
+      <div class="t">All clear</div>
+      <div class="s">No open tasks assigned to you. <a href="/projects">Browse projects</a> to pick some up.</div>
+    </div>
+  <% } %>
+
+  <% if (overdue.length) { %>
+    <div class="panel mb-3" style="border-color: rgba(239, 68, 68, 0.3);">
+      <div class="panel-head" style="color: var(--red);">
+        <i class="bi bi-exclamation-triangle-fill"></i> Overdue (<%= overdue.length %>)
+      </div>
+      <div class="panel-body" style="padding: 0;">
+        <% overdue.forEach(t => { %>
+          <a href="/projects/<%= t.project_id %>" class="my-task-row my-task-overdue">
+            <div class="mt-status"><i class="bi bi-circle-fill" style="color: var(--red); font-size: 10px;"></i></div>
+            <div class="mt-body">
+              <div class="mt-title"><%= t.title %></div>
+              <div class="mt-meta">
+                <span><i class="bi bi-kanban"></i> <%= t.project_name %></span>
+                <% if (t.client_name) { %><span><i class="bi bi-person"></i> <%= t.client_name %></span><% } %>
+                <span><i class="bi bi-calendar"></i> <%= t.due_date %></span>
+              </div>
+            </div>
+            <div class="mt-actions">
+              <span class="pill <%= t.priority === 'urgent' ? 'red' : t.priority === 'high' ? 'orange' : 'gray' %>" style="font-size: 10px; padding: 1px 6px;">
+                <span class="dot"></span><%= t.priority %>
+              </span>
+              <form method="POST" action="/tasks/<%= t.id %>/status" style="display: inline;">
+                <input type="hidden" name="status" value="done">
+                <input type="hidden" name="back" value="/tasks">
+                <button type="submit" class="btn ghost sm" title="Mark done"><i class="bi bi-check-lg"></i></button>
+              </form>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (thisWeek.length) { %>
+    <div class="panel mb-3">
+      <div class="panel-head"><i class="bi bi-calendar-week"></i> This week (<%= thisWeek.length %>)</div>
+      <div class="panel-body" style="padding: 0;">
+        <% thisWeek.forEach(t => { %>
+          <a href="/projects/<%= t.project_id %>" class="my-task-row">
+            <div class="mt-status"><i class="bi bi-circle-fill" style="color: var(--blue); font-size: 10px;"></i></div>
+            <div class="mt-body">
+              <div class="mt-title"><%= t.title %></div>
+              <div class="mt-meta">
+                <span><i class="bi bi-kanban"></i> <%= t.project_name %></span>
+                <% if (t.client_name) { %><span><i class="bi bi-person"></i> <%= t.client_name %></span><% } %>
+                <span><i class="bi bi-calendar"></i> <%= t.due_date %></span>
+              </div>
+            </div>
+            <div class="mt-actions">
+              <span class="pill <%= t.priority === 'urgent' ? 'red' : t.priority === 'high' ? 'orange' : 'gray' %>" style="font-size: 10px; padding: 1px 6px;">
+                <span class="dot"></span><%= t.priority %>
+              </span>
+              <form method="POST" action="/tasks/<%= t.id %>/status" style="display: inline;">
+                <input type="hidden" name="status" value="done">
+                <input type="hidden" name="back" value="/tasks">
+                <button type="submit" class="btn ghost sm" title="Mark done"><i class="bi bi-check-lg"></i></button>
+              </form>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (later.length) { %>
+    <div class="panel mb-3">
+      <div class="panel-head"><i class="bi bi-calendar3"></i> Later / no due date (<%= later.length %>)</div>
+      <div class="panel-body" style="padding: 0;">
+        <% later.forEach(t => { %>
+          <a href="/projects/<%= t.project_id %>" class="my-task-row">
+            <div class="mt-status"><i class="bi bi-circle-fill" style="color: var(--text-3); font-size: 10px;"></i></div>
+            <div class="mt-body">
+              <div class="mt-title"><%= t.title %></div>
+              <div class="mt-meta">
+                <span><i class="bi bi-kanban"></i> <%= t.project_name %></span>
+                <% if (t.client_name) { %><span><i class="bi bi-person"></i> <%= t.client_name %></span><% } %>
+                <% if (t.due_date) { %><span><i class="bi bi-calendar"></i> <%= t.due_date %></span><% } else { %><span class="text-muted">no due date</span><% } %>
+              </div>
+            </div>
+            <div class="mt-actions">
+              <% if (t.priority !== 'normal') { %>
+                <span class="pill <%= t.priority === 'urgent' ? 'red' : t.priority === 'high' ? 'orange' : 'gray' %>" style="font-size: 10px; padding: 1px 6px;">
+                  <span class="dot"></span><%= t.priority %>
+                </span>
+              <% } %>
+              <form method="POST" action="/tasks/<%= t.id %>/status" style="display: inline;">
+                <input type="hidden" name="status" value="done">
+                <input type="hidden" name="back" value="/tasks">
+                <button type="submit" class="btn ghost sm" title="Mark done"><i class="bi bi-check-lg"></i></button>
+              </form>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+
+</div>
+</main>
+</div>
+<%- include('../partials/foot') %>

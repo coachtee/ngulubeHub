@@ -1,0 +1,119 @@
+<% const title = locals.title || 'Pipeline — Ngulube Hub'; const active = locals.pipelineActive || 'pipeline'; %>
+<%- include('partials/head', { title, active }) %>
+<div class="app-shell">
+<%- include('partials/nav') %>
+<main class="main">
+<%- include('partials/topbar') %>
+<div class="content">
+
+  <header class="d-flex flex-wrap justify-between items-center mb-3" style="gap: 12px;">
+    <div>
+      <h1 style="font-size: 22px; font-weight: 700; margin: 0;"><i class="bi bi-funnel"></i> <%= pipelineLabel %></h1>
+      <p class="text-muted mb-0" style="font-size: 13px; margin-top: 2px;"><%= clients.length %> <%= clients.length === 1 ? 'client' : 'clients' %> in this stage</p>
+    </div>
+    <div class="d-flex gap-1 flex-wrap">
+      <a class="btn" href="/"><i class="bi bi-arrow-left"></i> <span class="hidden-mobile">All</span> clients</a>
+      <a class="btn primary" href="/clients/new"><i class="bi bi-plus-lg"></i> <span class="hidden-mobile">Add Client</span></a>
+    </div>
+  </header>
+
+  <!-- Filter bar -->
+  <form class="filterbar" method="get">
+    <div class="search-inline">
+      <i class="bi bi-search"></i>
+      <input name="q" placeholder="Search this stage…" value="<%= q %>">
+    </div>
+    <div class="right">
+      <button class="btn" type="submit"><i class="bi bi-funnel"></i> Apply</button>
+      <% if (q) { %><a class="btn ghost" href="?">Clear</a><% } %>
+    </div>
+  </form>
+
+  <!-- Table -->
+  <div class="table-card">
+    <div class="table-toolbar">
+      <span class="selection-info"><strong><%= clients.length %></strong> clients in <%= pipelineLabel %></span>
+    </div>
+    <div class="table-scroll">
+    <table class="t">
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Sector / Industry</th>
+          <th>Focus</th>
+          <th>Status</th>
+          <th>Solutions</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!clients.length) { %>
+          <tr><td colspan="6">
+            <div class="empty">
+              <i class="bi bi-inbox"></i>
+              <div class="t">No clients in this stage</div>
+              <div class="s">Move clients here from the dashboard, or <a href="/clients/new">add a new client</a>.</div>
+            </div>
+          </td></tr>
+        <% } %>
+        <% clients.forEach(c => { %>
+          <tr>
+            <td>
+              <div class="avatar-row">
+                <div class="avatar"><%= (c.name||'?').split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase() %></div>
+                <div class="meta">
+                  <div class="n"><a href="/clients/<%= c.id %>"><%= c.name %></a></div>
+                  <div class="s"><%= c.company || '' %></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <% if (c.sector) { %><span class="badge-mini sector"><span class="dot"></span><%= c.sector %></span><% } %>
+              <% if (c.industry) { %><div style="margin-top:3px;"><span class="badge-mini industry"><%= c.industry %></span></div><% } %>
+            </td>
+            <td>
+              <% (c.focus_areas || []).slice(0, 3).forEach(f => { %>
+                <span class="tag"><%= f %></span>
+              <% }) %>
+              <% if ((c.focus_areas||[]).length > 3) { %>
+                <span class="tag">+<%= c.focus_areas.length - 3 %></span>
+              <% } %>
+            </td>
+            <td>
+              <% const st = c.intro_status || 'not_contacted'; %>
+              <% if (st === 'engaged' || st === 'won') { %>
+                <span class="pill green"><span class="dot"></span><%= st %></span>
+              <% } else if (st === 'intro_sent') { %>
+                <span class="pill blue"><span class="dot"></span>Intro sent</span>
+              <% } else if (st === 'pending') { %>
+                <span class="pill yellow"><span class="dot"></span>Pending review</span>
+              <% } else { %>
+                <span class="pill gray"><span class="dot"></span>Not contacted</span>
+              <% } %>
+            </td>
+            <td>
+              <% const n = (c.ai_solutions||[]).length; %>
+              <% if (n > 0) { %>
+                <span class="badge-mini count"><i class="bi bi-stars"></i> <%= n %> matched</span>
+              <% } else { %>
+                <span class="text-muted" style="font-size:12px;">—</span>
+              <% } %>
+            </td>
+            <td>
+              <div class="row-actions">
+                <a class="btn icon-only sm" href="/clients/<%= c.id %>" title="View"><i class="bi bi-eye"></i></a>
+                <a class="btn icon-only sm" href="/clients/<%= c.id %>/intro" title="Generate intro"><i class="bi bi-file-text"></i></a>
+                <a class="btn icon-only sm" href="/clients/<%= c.id %>/edit" title="Edit"><i class="bi bi-pencil"></i></a>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+</div>
+</main>
+</div>
+<%- include('partials/foot') %>

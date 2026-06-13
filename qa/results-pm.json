@@ -1,0 +1,153 @@
+{
+  "passed": 26,
+  "failed": 3,
+  "total": 29,
+  "results": [
+    {
+      "test": "Login successful",
+      "status": "PASS",
+      "note": "url=http://localhost:3000/"
+    },
+    {
+      "test": "Dashboard shows Active Projects stat",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Dashboard shows Idea Inbox panel",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Dashboard shows My Upcoming Tasks panel",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Idea capture redirects to new project",
+      "status": "PASS",
+      "note": "url=http://localhost:3000/projects/1"
+    },
+    {
+      "test": "Projects page has kanban board",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Kanban has 4 columns",
+      "status": "PASS",
+      "note": "count=4"
+    },
+    {
+      "test": "List view has projects table",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "New project form loads",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "New project redirects to detail",
+      "status": "PASS",
+      "note": "url=http://localhost:3000/projects/2"
+    },
+    {
+      "test": "Project detail has header",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Project detail has tasks panel",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Project detail has overview panel",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Added 4 tasks",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Task status changed to doing",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "My Tasks shows Overdue section",
+      "status": "FAIL",
+      "note": ""
+    },
+    {
+      "test": "My Tasks shows This week section",
+      "status": "FAIL",
+      "note": ""
+    },
+    {
+      "test": "Kanban has 2+ project cards",
+      "status": "PASS",
+      "note": "count=2"
+    },
+    {
+      "test": "Project status changed to active",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "GET /pipeline/not-contacted returns 200",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "/pipeline/not-contacted shows 'Not Contacted' heading",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "GET /pipeline/intro-sent returns 200",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "/pipeline/intro-sent shows 'Intro Sent' heading",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "GET /pipeline/engaged returns 200",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "/pipeline/engaged shows 'Engaged / Won' heading",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Mobile projects page loads",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Mobile projects list loads",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Mobile my-tasks loads",
+      "status": "FAIL",
+      "note": ""
+    },
+    {
+      "test": "Mobile project detail loads",
+      "status": "PASS",
+      "note": ""
+    }
+  ],
+  "console_errors": []
+}

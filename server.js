@@ -6,6 +6,7 @@ const session = require('express-session');
 const path = require('path');
 const db = require('./db/schema');
 const users = require('./db/users');
+const projects = require('./db/projects');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -214,10 +215,62 @@ function dashboardHandler(req, res) {
     pending: db.prepare("SELECT COUNT(*) as c FROM clients WHERE intro_status = 'Pending review' OR intro_status = 'pending'").get().c,
   };
 
-  res.render('dashboard', { clients, sectors, statuses, q, sector, status, stats, active: 'dashboard' });
+  // Project + task widgets
+  const projectStats = projects.getProjectStatsGlobal();
+  const myUpcomingTasks = projects.getUpcomingTasks(req.session.user.id, 7);
+  const recentIdeas = db.prepare("SELECT id, name, created_at FROM projects WHERE status = 'concept' AND archived = 0 ORDER BY created_at DESC LIMIT 3").all();
+  const activeProjects = db.prepare("SELECT id, name, status, target_end_date, est_value_zar FROM projects WHERE status IN ('active','scoping','quoted') AND archived = 0 ORDER BY updated_at DESC LIMIT 4").all();
+
+  res.render('dashboard', {
+    clients, sectors, statuses, q, sector, status, stats,
+    projectStats, myUpcomingTasks, recentIdeas, activeProjects,
+    projects, active: 'dashboard',
+  });
 }
 app.get('/', requireAuth, dashboardHandler);
 app.get('/dashboard', requireAuth, dashboardHandler);
+
+// ---------- PIPELINE VIEWS (filter dashboard by intro status) ----------
+
+const PIPELINE_MAP = {
+  'not-contacted': { statuses: ['Not contacted'], label: 'Not Contacted', active: 'not_contacted' },
+  'intro-sent':    { statuses: ['Intro sent'],    label: 'Intro Sent',    active: 'intro_sent' },
+  'engaged':       { statuses: ['Meeting scheduled', 'Engaged', 'Won'], label: 'Engaged / Won', active: 'engaged' },
+};
+
+function pipelineHandler(slug) {
+  return (req, res) => {
+    const cfg = PIPELINE_MAP[slug];
+    if (!cfg) return res.status(404).send('Unknown pipeline view');
+    const q = (req.query.q || '').trim();
+    const placeholders = cfg.statuses.map(() => '?').join(',');
+    let sql = `SELECT * FROM clients WHERE intro_status IN (${placeholders})`;
+    const args = [...cfg.statuses];
+    if (q) { sql += ' AND (name LIKE ? OR company LIKE ? OR bio LIKE ?)'; args.push(`%${q}%`, `%${q}%`, `%${q}%`); }
+    sql += ' ORDER BY sector, name';
+    const clients = db.prepare(sql).all(...args).map(c => ({
+      ...c,
+      focus_areas: safeJson(c.focus_areas, []),
+      pain_points: safeJson(c.pain_points, []),
+      ai_solutions: safeJson(c.ai_solutions, []),
+      tags: safeJson(c.tags, []),
+    }));
+    const sectors = db.prepare("SELECT DISTINCT sector FROM clients WHERE sector IS NOT NULL AND sector != '' ORDER BY sector").all().map(r => r.sector);
+    const stats = {
+      total: clients.length,
+      sectors: new Set(clients.map(c => c.sector).filter(Boolean)).size,
+      pending: db.prepare("SELECT COUNT(*) as c FROM clients WHERE intro_status = 'Pending review' OR intro_status = 'pending'").get().c,
+    };
+    res.render('pipeline', {
+      clients, sectors, stats, q,
+      pipelineLabel: cfg.label, pipelineActive: cfg.active,
+      title: cfg.label + ' — Ngulube Hub',
+    });
+  };
+}
+app.get('/pipeline/not-contacted', requireAuth, pipelineHandler('not-contacted'));
+app.get('/pipeline/intro-sent',    requireAuth, pipelineHandler('intro-sent'));
+app.get('/pipeline/engaged',       requireAuth, pipelineHandler('engaged'));
 
 app.get('/clients/new', requireAuth, (req, res) => {
   const sectors = ['Finance', 'Banking', 'Insurance', 'Healthcare', 'IT Services', 'Cybersecurity', 'Construction', 'Engineering', 'Architecture', 'Creative', 'Marketing', 'Real Estate', 'HR Services', 'Telecommunications', 'Accounting', 'Fashion', 'Energy', 'Education', 'Other'];
@@ -360,6 +413,159 @@ app.get('/catalog', requireAuth, (req, res) => {
 app.get('/catalog.json', requireAuth, (req, res) => res.json(loadCatalog()));
 
 app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now(), users: users.countAll() }));
+
+// =============================================================
+// PROJECT MANAGEMENT MODULE
+// =============================================================
+
+// Quick "drop an idea" — creates a concept project from a single field.
+app.post('/ideas', requireAuth, (req, res) => {
+  const title = (req.body.title || '').trim();
+  if (!title) return res.redirect('/dashboard?err=missing_title');
+  const id = projects.createProject({
+    name: title,
+    description: req.body.description || null,
+    owner_id: req.session.user.id,
+    status: 'concept',
+  }, req.session.user.id);
+  res.redirect('/projects/' + id);
+});
+
+// ---------- PROJECT PAGES ----------
+
+app.get('/projects', requireAuth, (req, res) => {
+  const view = req.query.view || 'kanban';
+  const search = (req.query.q || '').trim();
+  const status = req.query.status || null;
+  const allProjects = projects.getProjects({ status, search, archived: 0 });
+  const grouped = projects.getProjectsByStatus();
+  const stats = projects.getProjectStatsGlobal();
+  const allUsers = users.listAll();
+  const allClients = db.prepare("SELECT id, name, company FROM clients ORDER BY name").all();
+  res.render('projects/index', {
+    title: 'Projects — Ngulube Hub',
+    active: 'projects',
+    view, search, status, allProjects, grouped, stats, allUsers, allClients,
+    projects,
+  });
+});
+
+app.get('/projects/new', requireAuth, (req, res) => {
+  const allUsers = users.listAll();
+  const allClients = db.prepare("SELECT id, name, company FROM clients ORDER BY name").all();
+  res.render('projects/form', {
+    title: 'New Project — Ngulube Hub',
+    active: 'projects',
+    project: null, allUsers, allClients, projects,
+  });
+});
+
+app.post('/projects', requireAuth, (req, res) => {
+  const id = projects.createProject(req.body, req.session.user.id);
+  res.redirect('/projects/' + id);
+});
+
+app.get('/projects/:id', requireAuth, (req, res) => {
+  const p = projects.getProjectWithDetails(req.params.id);
+  if (!p) return res.status(404).send('Project not found');
+  const allUsers = users.listAll();
+  const allClients = db.prepare("SELECT id, name, company FROM clients ORDER BY name").all();
+  res.render('projects/detail', {
+    title: p.name + ' — Ngulube Hub',
+    active: 'projects',
+    project: p, allUsers, allClients, projects,
+  });
+});
+
+app.get('/projects/:id/edit', requireAuth, (req, res) => {
+  const p = projects.getProject(req.params.id);
+  if (!p) return res.status(404).send('Project not found');
+  const allUsers = users.listAll();
+  const allClients = db.prepare("SELECT id, name, company FROM clients ORDER BY name").all();
+  res.render('projects/form', {
+    title: 'Edit ' + p.name + ' — Ngulube Hub',
+    active: 'projects',
+    project: p, allUsers, allClients, projects,
+  });
+});
+
+app.post('/projects/:id', requireAuth, (req, res) => {
+  projects.updateProject(req.params.id, req.body, req.session.user.id);
+  res.redirect('/projects/' + req.params.id);
+});
+
+app.post('/projects/:id/status', requireAuth, (req, res) => {
+  const newStatus = req.body.status;
+  if (!projects.PROJECT_STATUSES.includes(newStatus)) return res.status(400).send('Bad status');
+  const p = projects.getProject(req.params.id);
+  if (!p) return res.status(404).send('Not found');
+  projects.updateProject(req.params.id, { ...p, status: newStatus }, req.session.user.id);
+  const back = req.body.back || ('/projects/' + req.params.id);
+  res.redirect(back);
+});
+
+app.post('/projects/:id/archive', requireAuth, (req, res) => {
+  projects.archiveProject(req.params.id, req.session.user.id);
+  res.redirect('/projects');
+});
+
+app.post('/projects/:id/delete', requireAuth, (req, res) => {
+  projects.deleteProject(req.params.id);
+  res.redirect('/projects');
+});
+
+// ---------- TASKS ----------
+
+app.post('/projects/:id/tasks', requireAuth, (req, res) => {
+  projects.createTask({ ...req.body, project_id: req.params.id }, req.session.user.id);
+  const back = req.body.back || ('/projects/' + req.params.id);
+  res.redirect(back);
+});
+
+app.post('/tasks/:tid/status', requireAuth, (req, res) => {
+  const t = projects.getTask(req.params.tid);
+  if (!t) return res.status(404).send('Task not found');
+  const newStatus = req.body.status;
+  if (!projects.TASK_STATUSES.includes(newStatus)) return res.status(400).send('Bad status');
+  projects.updateTask(req.params.tid, { ...t, status: newStatus }, req.session.user.id);
+  const back = req.body.back || ('/projects/' + t.project_id);
+  res.redirect(back);
+});
+
+app.post('/tasks/:tid', requireAuth, (req, res) => {
+  const t = projects.getTask(req.params.tid);
+  if (!t) return res.status(404).send('Task not found');
+  projects.updateTask(req.params.tid, { ...t, ...req.body }, req.session.user.id);
+  const back = req.body.back || ('/projects/' + t.project_id);
+  res.redirect(back);
+});
+
+app.post('/tasks/:tid/comments', requireAuth, (req, res) => {
+  const body = (req.body.body || '').trim();
+  if (body) projects.addComment(req.params.tid, req.session.user.id, body);
+  const back = req.body.back || ('/projects/');
+  res.redirect(back);
+});
+
+app.post('/tasks/:tid/delete', requireAuth, (req, res) => {
+  const t = projects.getTask(req.params.tid);
+  if (!t) return res.status(404).send('Task not found');
+  projects.deleteTask(req.params.tid, req.session.user.id);
+  const back = req.body.back || ('/projects/' + t.project_id);
+  res.redirect(back);
+});
+
+// ---------- MY TASKS ----------
+
+app.get('/tasks', requireAuth, (req, res) => {
+  const myTasks = projects.getMyTasks(req.session.user.id);
+  const upcoming = projects.getUpcomingTasks(req.session.user.id, 7);
+  res.render('projects/my-tasks', {
+    title: 'My Tasks — Ngulube Hub',
+    active: 'tasks',
+    myTasks, upcoming,
+  });
+});
 
 // ---------- PUBLIC JOIN FORM (no login required) ----------
 

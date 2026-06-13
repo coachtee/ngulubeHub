@@ -1,0 +1,162 @@
+<% const title = locals.title || 'Project'; const active = 'projects'; %>
+<%- include('../partials/head', { title, active }) %>
+<div class="app-shell">
+<%- include('../partials/nav') %>
+<main class="main">
+<%- include('../partials/topbar') %>
+<div class="content">
+
+  <header class="d-flex flex-wrap justify-between items-center mb-3">
+    <div>
+      <h1 style="font-size: 22px; font-weight: 700; margin: 0;">
+        <i class="bi bi-kanban"></i> <%= project ? 'Edit project' : 'New project' %>
+      </h1>
+      <p class="text-muted mb-0" style="font-size: 13px; margin-top: 2px;">
+        <%= project ? 'Update the charter below.' : 'A short charter is enough — you can add tasks after creating.' %>
+      </p>
+    </div>
+  </header>
+
+  <% if (locals.error) { %>
+    <div style="background: var(--red-bg); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px;">
+      <i class="bi bi-exclamation-triangle"></i> <%= error %>
+    </div>
+  <% } %>
+
+  <form class="panel" method="POST" action="<%= project ? '/projects/' + project.id : '/projects' %>">
+    <div class="panel-body">
+      <div class="form-section-title">The basics</div>
+      <div class="form-grid">
+        <div class="full">
+          <div class="form-group">
+            <label>Project name *</label>
+            <input name="name" required maxlength="200" value="<%= project ? project.name : '' %>" placeholder="e.g. AI Chatbot for Seth's customer service">
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label>Status</label>
+            <select name="status">
+              <% projects.PROJECT_STATUSES.forEach(s => { %>
+                <option value="<%= s %>" <%= project && project.status === s ? 'selected' : (!project && s === 'concept' ? 'selected' : '') %>><%= projects.PROJECT_STATUS_LABELS[s] %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select name="priority">
+              <% projects.PROJECT_PRIORITIES.forEach(p => { %>
+                <option value="<%= p %>" <%= project && project.priority === p ? 'selected' : (!project && p === 'normal' ? 'selected' : '') %>><%= p %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label>Owner</label>
+            <select name="owner_id">
+              <% allUsers.forEach(u => { %>
+                <option value="<%= u.id %>" <%= project && project.owner_id === u.id ? 'selected' : '' %>><%= u.name || u.username %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label>Linked client (optional)</label>
+            <select name="client_id">
+              <option value="">— Standalone project —</option>
+              <% allClients.forEach(c => { %>
+                <option value="<%= c.id %>" <%= project && project.client_id === c.id ? 'selected' : '' %>>
+                  <%= c.name %><%= c.company ? ' · ' + c.company : '' %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section-title">The why (PMBOK charter)</div>
+      <div class="form-grid">
+        <div class="full">
+          <div class="form-group">
+            <label>What is this project?</label>
+            <textarea name="description" rows="2" placeholder="One or two sentences on the scope of work."><%= project ? (project.description || '') : '' %></textarea>
+          </div>
+        </div>
+        <div class="full">
+          <div class="form-group">
+            <label>Why does it matter? (problem)</label>
+            <textarea name="problem" rows="2" placeholder="The pain point or opportunity this addresses."><%= project ? (project.problem || '') : '' %></textarea>
+          </div>
+        </div>
+        <div class="full">
+          <div class="form-group">
+            <label>What does "done" look like? (success criteria)</label>
+            <textarea name="success_criteria" rows="2" placeholder="How will we know this worked?"><%= project ? (project.success_criteria || '') : '' %></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section-title">Schedule &amp; value</div>
+      <div class="form-grid">
+        <div>
+          <div class="form-group">
+            <label>Start date</label>
+            <input type="date" name="start_date" value="<%= project ? (project.start_date || '') : '' %>">
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label>Target end date</label>
+            <input type="date" name="target_end_date" value="<%= project ? (project.target_end_date || '') : '' %>">
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label>Estimated value (ZAR)</label>
+            <input type="number" min="0" step="100" name="est_value_zar" value="<%= project ? project.est_value_zar : 0 %>" placeholder="0">
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label>Estimated hours</label>
+            <input type="number" min="0" step="0.5" name="est_hours" value="<%= project ? project.est_hours : 0 %>" placeholder="0">
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label>Risk level</label>
+            <select name="risk_level">
+              <% ['low','medium','high'].forEach(r => { %>
+                <option value="<%= r %>" <%= project && project.risk_level === r ? 'selected' : (!project && r === 'low' ? 'selected' : '') %>><%= r %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label>Tags (comma separated)</label>
+            <input name="tags" value="<%= project && project.tags ? project.tags.join(', ') : '' %>" placeholder="ai, internal, q3-priority">
+          </div>
+        </div>
+        <div class="full">
+          <div class="form-group">
+            <label>Biggest risks (freeform)</label>
+            <textarea name="risks" rows="2" placeholder="What's most likely to derail this?"><%= project ? (project.risks || '') : '' %></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions" style="padding: 14px 18px;">
+      <a class="btn ghost" href="<%= project ? '/projects/' + project.id : '/projects' %>">Cancel</a>
+      <button type="submit" class="btn primary"><i class="bi bi-check-lg"></i> <%= project ? 'Save changes' : 'Create project' %></button>
+    </div>
+  </form>
+
+</div>
+</main>
+</div>
+<%- include('../partials/foot') %>
