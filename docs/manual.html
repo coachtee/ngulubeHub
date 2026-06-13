@@ -1,0 +1,1202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ngulube Hub — User Manual</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --surface-2: #fafbfc;
+    --border: #e5e7eb;
+    --border-strong: #d1d5db;
+    --text: #1d2230;
+    --text-2: #5b6478;
+    --text-3: #8a93a6;
+    --brand: #1F2D5C;
+    --brand-2: #2c3f7a;
+    --accent: #2563eb;
+    --orange: #F26B4A;
+    --orange-2: #ea580c;
+    --green: #16a34a;
+    --green-bg: #dcfce7;
+    --yellow: #ca8a04;
+    --yellow-bg: #fef9c3;
+    --red: #dc2626;
+    --red-bg: #fee2e2;
+    --blue-bg: #dbeafe;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15.5px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Layout */
+  .layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+  nav.toc {
+    position: sticky; top: 0;
+    height: 100vh; overflow-y: auto;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 20px;
+    font-size: 13px;
+  }
+  nav.toc .toc-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px;
+    color: var(--text-3); margin-bottom: 12px;
+  }
+  nav.toc a {
+    display: block; padding: 4px 8px; border-radius: 4px;
+    color: var(--text-2); font-weight: 500;
+    line-height: 1.4; margin-bottom: 1px;
+  }
+  nav.toc a:hover { background: var(--bg); color: var(--text); text-decoration: none; }
+  nav.toc a.sub { padding-left: 22px; font-size: 12.5px; color: var(--text-3); }
+  nav.toc .toc-section { margin-top: 18px; }
+
+  main.content { max-width: 940px; padding: 48px 64px 96px; }
+
+  /* Cover */
+  .cover {
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    color: #fff;
+    padding: 48px 56px;
+    border-radius: 12px;
+    margin-bottom: 48px;
+  }
+  .cover h1 { font-size: 36px; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.02em; }
+  .cover .sub { font-size: 15px; opacity: 0.85; margin: 0 0 24px; }
+  .cover .meta { display: flex; gap: 24px; font-size: 13px; opacity: 0.75; flex-wrap: wrap; }
+  .cover .meta strong { opacity: 1; }
+
+  /* Typography */
+  h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 16px; }
+  h2 {
+    font-size: 26px; font-weight: 700; letter-spacing: -0.01em;
+    margin: 56px 0 16px; padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+  h2:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+  h3 { font-size: 18px; font-weight: 700; margin: 28px 0 10px; color: var(--brand); }
+  h4 { font-size: 14.5px; font-weight: 700; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-2); }
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 14px; padding-left: 24px; }
+  li { margin-bottom: 4px; }
+
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--text);
+  }
+  pre {
+    background: #1f2937;
+    color: #e5e7eb;
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-x: auto;
+    margin: 0 0 16px;
+  }
+  pre code { background: transparent; padding: 0; color: inherit; }
+
+  /* Tables */
+  table {
+    width: 100%; border-collapse: collapse; font-size: 14px;
+    margin: 0 0 20px;
+  }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--surface-2); font-weight: 600; color: var(--text-2); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  tr:last-child td { border-bottom: none; }
+
+  /* Callouts */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--blue-bg);
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .callout.warn { border-left-color: var(--yellow); background: var(--yellow-bg); }
+  .callout.danger { border-left-color: var(--red); background: var(--red-bg); }
+  .callout.success { border-left-color: var(--green); background: var(--green-bg); }
+  .callout strong { color: var(--brand); }
+
+  /* Figures */
+  figure { margin: 20px 0 28px; }
+  figure img { display: block; width: 100%; border-radius: 8px; border: 1px solid var(--border); }
+  figcaption {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--text-3);
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* Two-column for some lists */
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 700px) { .cols { grid-template-columns: 1fr; } }
+
+  /* Keyboard keys */
+  kbd {
+    display: inline-block;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    padding: 2px 7px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    color: var(--text-2);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  /* Buttons (visual reference) */
+  .btn {
+    display: inline-block; padding: 6px 12px;
+    font-size: 13px; font-weight: 600;
+    background: var(--surface-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 5px;
+  }
+  .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn.danger { background: var(--red); color: #fff; border-color: var(--red); }
+
+  /* Pill labels (visual) */
+  .pill {
+    display: inline-block; padding: 2px 8px; font-size: 11.5px; font-weight: 600;
+    background: #f1f3f7; color: #5b6478; border-radius: 4px; letter-spacing: 0.01em;
+  }
+  .pill.green { background: var(--green-bg); color: #15803d; }
+  .pill.blue { background: var(--blue-bg); color: var(--accent); }
+  .pill.yellow { background: var(--yellow-bg); color: var(--yellow); }
+  .pill.purple { background: #ede9fe; color: #7c3aed; }
+
+  /* Layout diagram in section 2 */
+  .layout-diagram {
+    font-family: ui-monospace, monospace;
+    font-size: 11.5px; line-height: 1.4;
+    background: #1f2937; color: #d1d5db;
+    padding: 18px 22px;
+    border-radius: 8px;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* Print */
+  @media print {
+    nav.toc { display: none; }
+    .layout { display: block; }
+    main.content { max-width: 100%; padding: 24px; }
+    h2 { page-break-before: always; }
+    h2:first-of-type { page-break-before: avoid; }
+    .cover { page-break-after: always; }
+    figure { page-break-inside: avoid; }
+  }
+
+  /* Mobile */
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.toc { position: static; height: auto; max-height: 240px; }
+    main.content { padding: 32px 20px 64px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="toc">
+  <div class="toc-title">On this page</div>
+  <a href="#1-what-is-ngulube-hub">1. What is Ngulube Hub?</a>
+  <a href="#2-getting-started">2. Getting started</a>
+  <a href="#3-the-dashboard">3. The dashboard</a>
+  <a href="#4-clients-the-core-data-model">4. Clients: the core data model</a>
+  <a href="#5-adding-and-editing-clients">5. Adding and editing clients</a>
+  <a href="#6-the-intro-brief">6. The intro brief</a>
+  <a href="#7-sharing-whatsapp--email">7. Sharing: WhatsApp &amp; Email</a>
+  <a href="#8-the-board-kanban">8. The board (kanban)</a>
+  <a href="#9-the-calendar">9. The calendar</a>
+  <a href="#10-the-today-widget">10. The Today widget</a>
+  <a href="#11-meeting-prep-ai">11. Meeting Prep (AI)</a>
+  <a href="#12-logging-activity">12. Logging activity</a>
+  <a href="#13-pipeline-data-cadence-next-step-outcome">13. Pipeline data</a>
+  <a href="#14-file-attachments">14. File attachments</a>
+  <a href="#15-global-search-cm">15. Global search (Cmd+K)</a>
+  <a href="#16-project-management">16. Project Management</a>
+  <a href="#17-admin-managing-users">17. Admin: managing users</a>
+  <a href="#18-admin-ai-providers">18. Admin: AI providers</a>
+  <a href="#19-public-join-form">19. Public join form</a>
+  <a href="#20-csv-bulk-import">20. CSV bulk import</a>
+  <a href="#21-best-practices">21. Best practices</a>
+  <a href="#22-troubleshooting--faq">22. Troubleshooting &amp; FAQ</a>
+  <a href="#23-glossary">23. Glossary</a>
+</nav>
+
+<main class="content">
+
+<div class="cover">
+  <h1>Ngulube Hub</h1>
+  <p class="sub">A self-hosted business client database + AI-solution matching system. The manual your team actually reads.</p>
+  <div class="meta">
+    <span><strong>Version</strong> 1.0</span>
+    <span><strong>Updated</strong> 2026-06-13</span>
+    <span><strong>Audience</strong> Admins and members</span>
+  </div>
+</div>
+
+<!-- ========================== SECTION 1 ========================== -->
+<h1 id="1-what-is-ngulube-hub">1. What is Ngulube Hub?</h1>
+
+<p>Ngulube Hub is a self-hosted CRM built for <strong>one specific job</strong>: helping you manage a small, high-value network of business contacts and turn them into clients.</p>
+
+<p>It's not Salesforce. It's not HubSpot. It's the tool you actually open on the morning of a client call.</p>
+
+<h3>What it does well</h3>
+<ul>
+  <li><strong>Stores your network</strong> with rich context: bio, sector, focus areas, pain points, AI-solution matches</li>
+  <li><strong>Generates personalised intro briefs</strong> for each contact</li>
+  <li><strong>Tracks your pipeline</strong> from first contact to closed deal</li>
+  <li><strong>Briefs you before a call</strong> using AI synthesis of everything you know about the contact</li>
+  <li><strong>Manages your projects and tasks</strong> alongside your contacts (so a deal and the work behind it live together)</li>
+  <li><strong>Surfaces what to do today</strong> — overdue follow-ups, scheduled calls, stale deals</li>
+</ul>
+
+<h3>What's deliberately NOT here</h3>
+<ul>
+  <li>Multi-tenancy, billing, team chat</li>
+  <li>Lead capture forms, drip campaigns, marketing automation</li>
+  <li>Social-media listening, lead scoring</li>
+  <li>Mobile native app (the web UI is mobile-friendly)</li>
+</ul>
+
+<div class="callout">
+  <strong>Ngulube Hub is a personal weapon, not a product.</strong> Every feature is here because it makes one user's day better.
+</div>
+
+<!-- ========================== SECTION 2 ========================== -->
+<h1 id="2-getting-started">2. Getting started</h1>
+
+<h3>First-time setup</h3>
+<p>The first time anyone visits the app, they land on a setup screen. The first user created is a <strong>super-admin</strong> — they can do everything, including creating other admins.</p>
+
+<p>After the super-admin is created, every other user must be added by an admin (see <a href="#17-admin-managing-users">§17</a>).</p>
+
+<h3>Login</h3>
+
+<figure>
+  <img src="manual-assets/10-login-final.png" alt="Login screen">
+  <figcaption>The login page is intentionally dark — the one "moment" of contrast in the otherwise light workspace.</figcaption>
+</figure>
+
+<p>Enter your username and password and click <span class="btn primary">Sign in</span>.</p>
+
+<h3>The layout (after login)</h3>
+<div class="layout-diagram">┌─────────────────────────────────────────────────────────────┐
+│  ┌──────────┐  ┌──────────────────────────┐  ┌───────────┐ │
+│  │  N logo  │  │  Greeting    Search  +Add│  │  user     │ │
+│  │ Ngulu... │  ├──────────────────────────┤  │  menu     │ │
+│  │ WORKSPACE│  │                          │  │           │ │
+│  ├──────────┤  │                          │  │           │ │
+│  │ Home     │  │       Main content       │  │           │ │
+│  │ Calendar │  │                          │  │           │ │
+│  │ Add Cli..│  │                          │  │           │ │
+│  │ Import   │  │                          │  │           │ │
+│  │          │  │                          │  │           │ │
+│  │ WORK     │  │                          │  │           │ │
+│  │ All Cli..│  │                          │  │           │ │
+│  │ Projects │  │                          │  │           │ │
+│  │ My Tasks │  │                          │  │           │ │
+│  │ AI Sol.. │  │                          │  │           │ │
+│  │          │  │                          │  │           │ │
+│  │ PIPELINE │  │                          │  │           │ │
+│  │ Not Co.. │  │                          │  │           │ │
+│  │ Intro S..│  │                          │  │           │ │
+│  │ Engaged  │  │                          │  │           │ │
+│  │          │  │                          │  │           │ │
+│  │ PUBLIC   │  │                          │  │           │ │
+│  │ Join Fo..│  │                          │  │           │ │
+│  │          │  │                          │  │           │ │
+│  │ ADMIN    │  │                          │  │           │ │
+│  │ Manage.. │  │                          │  │           │ │
+│  │ AI Prov..│  │                          │  │           │ │
+│  └──────────┘  └──────────────────────────┘  └───────────┘ │
+└─────────────────────────────────────────────────────────────┘</div>
+
+<ul>
+  <li><strong>Left sidebar:</strong> workspace sections. Click the <kbd>«</kbd> arrow to collapse.</li>
+  <li><strong>Top bar:</strong> greeting, search trigger (Cmd+K), quick-add client, import, join form link.</li>
+  <li><strong>Main content:</strong> the page you're on.</li>
+</ul>
+
+<h3>Keyboard shortcuts</h3>
+<table>
+  <thead><tr><th>Keys</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd> / <kbd>Cmd</kbd>+<kbd>K</kbd></td><td>Open global search palette</td></tr>
+    <tr><td><kbd>Esc</kbd></td><td>Close any modal or palette</td></tr>
+    <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Navigate search results</td></tr>
+    <tr><td><kbd>Enter</kbd></td><td>Open selected result</td></tr>
+    <tr><td><kbd>n</kbd> (in palette)</td><td>Go to "Add new client"</td></tr>
+  </tbody>
+</table>
+
+<!-- ========================== SECTION 3 ========================== -->
+<h1 id="3-the-dashboard">3. The dashboard</h1>
+
+<figure>
+  <img src="manual-assets/05-dashboard-list-rows.png" alt="Dashboard view">
+  <figcaption>Dashboard — stats, Today widget, project widgets, and the compact client list at the bottom.</figcaption>
+</figure>
+
+<p>The dashboard (<code>/</code>) is your home base. From the top down:</p>
+
+<ol>
+  <li><strong>Page header</strong> — breadcrumb (Home &gt; All Clients), bold title "Business Clients", subtitle with total count</li>
+  <li><strong>Stats cards</strong> (first row of 4): Total Clients, Not Yet Contacted, In Motion, Pending Review</li>
+  <li><strong>Project + Task stats</strong> (second row of 4): Active Projects, Overdue Tasks, In Scoping, Closed (Won)</li>
+  <li><strong>Today widget</strong> — see <a href="#10-the-today-widget">§10</a></li>
+  <li><strong>Idea Inbox / My Upcoming Tasks / Active Work</strong> — three-up grid</li>
+  <li><strong>Search + filter toolbar</strong> — quick search by name, sector, or industry</li>
+  <li><strong>View switcher</strong> — <code>List [N] | Board | Calendar</code> tabs</li>
+  <li><strong>Compact client list</strong> — see <a href="#4-clients-the-core-data-model">§4</a></li>
+</ol>
+
+<h3>Switching views</h3>
+<p>Click the <strong>List / Board / Calendar</strong> tabs to switch how clients are displayed:</p>
+<ul>
+  <li><strong>List</strong> — dense, scannable, with all info per row</li>
+  <li><strong>Board</strong> — kanban with drag-and-drop between status columns</li>
+  <li><strong>Calendar</strong> — month grid with tasks and touch events</li>
+</ul>
+
+<!-- ========================== SECTION 4 ========================== -->
+<h1 id="4-clients-the-core-data-model">4. Clients: the core data model</h1>
+
+<p>A "client" in Ngulube Hub is any business contact you're tracking. It's not just a name and email — it carries the full context of who they are and how you can help them.</p>
+
+<h3>Fields</h3>
+<table>
+  <thead><tr><th>Field</th><th>What it is</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Name</strong></td><td>Required. Full name.</td></tr>
+    <tr><td><strong>Title / role</strong></td><td>Job title (e.g. "Financial Planner").</td></tr>
+    <tr><td><strong>Company</strong></td><td>Where they work.</td></tr>
+    <tr><td><strong>Website</strong></td><td>Their site, if any.</td></tr>
+    <tr><td><strong>Sector</strong></td><td>High-level bucket (Finance, Healthcare, IT, etc.).</td></tr>
+    <tr><td><strong>Industry</strong></td><td>More specific (Financial Advisory, Banking, etc.).</td></tr>
+    <tr><td><strong>Sub-industry</strong></td><td>Niche (Personal Financial Planning).</td></tr>
+    <tr><td><strong>Region</strong></td><td>Default "South Africa".</td></tr>
+    <tr><td><strong>Source</strong></td><td>How you met (Direct add, Public form, Referral).</td></tr>
+    <tr><td><strong>Bio</strong></td><td>Free text — what they do, who they serve.</td></tr>
+    <tr><td><strong>Focus areas</strong></td><td>Multi-line. One topic per line.</td></tr>
+    <tr><td><strong>Pain points</strong></td><td>Multi-line. Their problems, in their words.</td></tr>
+    <tr><td><strong>Tags</strong></td><td>Comma-separated labels for filtering.</td></tr>
+    <tr><td><strong>Contact email</strong></td><td>Used by the share-via-email button.</td></tr>
+    <tr><td><strong>Contact phone</strong></td><td>Used by the share-via-WhatsApp button.</td></tr>
+    <tr><td><strong>Status</strong></td><td>Pipeline stage (see below).</td></tr>
+    <tr><td><strong>Notes</strong></td><td>Private, internal — never shown to the client.</td></tr>
+    <tr><td><strong>AI solutions</strong></td><td>Auto-matched from the catalog based on sector/industry.</td></tr>
+  </tbody>
+</table>
+
+<h3>Pipeline statuses</h3>
+<p>A client moves through these stages. Drag-and-drop on the board view, or change manually via the edit form.</p>
+<ul>
+  <li><span class="pill">Not contacted</span> — default for new clients</li>
+  <li><span class="pill yellow">Pending review</span> — set when someone fills in the public join form (you approve or discard)</li>
+  <li><span class="pill blue">Intro sent</span> — you've sent the personalised intro brief</li>
+  <li><span class="pill green">Engaged</span> — they're in active conversation</li>
+  <li><span class="pill green">Won</span> — closed deal</li>
+  <li><span class="pill">Lost</span> — explicitly lost (with optional reason)</li>
+  <li><span class="pill">On hold</span> — paused for now</li>
+</ul>
+
+<h3>Status visualisation</h3>
+<p>Status appears as a coloured <strong>pill</strong> throughout the app:</p>
+<ul>
+  <li>Gray = not contacted</li>
+  <li>Yellow = pending</li>
+  <li>Blue = intro sent</li>
+  <li>Green = engaged or won</li>
+  <li>Red = lost</li>
+</ul>
+
+<h3>The compact list view</h3>
+
+<figure>
+  <img src="manual-assets/05-dashboard-list-rows.png" alt="Compact list view">
+  <figcaption>One row per client — avatar, name, status pill, focus tags, last touch, solution count.</figcaption>
+</figure>
+
+<p>The list view shows one row per client with the most relevant info at a glance:</p>
+<ul>
+  <li><strong>Avatar</strong> (initials)</li>
+  <li><strong>Name + role</strong></li>
+  <li><strong>Sector / Industry</strong></li>
+  <li><strong>Status pill</strong> (with coloured dot)</li>
+  <li><strong>Focus tags</strong> (up to 2, then "+N")</li>
+  <li><strong>Last touch date</strong></li>
+  <li><strong>Solution count</strong> (purple pill if matched)</li>
+</ul>
+
+<p>Hover any row to reveal the action icons (view, intro, edit).</p>
+
+<!-- ========================== SECTION 5 ========================== -->
+<h1 id="5-adding-and-editing-clients">5. Adding and editing clients</h1>
+
+<h3>Adding a new client</h3>
+<p>Click <span class="btn primary">+ Add Client</span> in the top bar (or <kbd>Ctrl</kbd>+<kbd>K</kbd> → type a name → press <kbd>n</kbd>).</p>
+
+<p>The form has these sections:</p>
+<ol>
+  <li><strong>Identity</strong> — name, title, company, website</li>
+  <li><strong>Classification</strong> — sector, industry, sub-industry, region, source, intro status</li>
+  <li><strong>Profile</strong> — bio, focus areas (one per line), pain points, tags (comma-separated)</li>
+  <li><strong>Contact</strong> — email, phone</li>
+  <li><strong>Outreach cadence</strong> — last contacted date, touch cadence</li>
+  <li><strong>Next step &amp; follow-up</strong> — explicit next step + date</li>
+  <li><strong>Outcome</strong> (only if status is Won or Lost) — won value in ZAR or lost reason</li>
+  <li><strong>Notes</strong> (private, internal)</li>
+</ol>
+
+<p>Click <span class="btn primary">Create Client</span> to save. You're redirected to the new client's profile.</p>
+
+<h3>Editing a client</h3>
+<p>From a client profile, click the <strong>pencil icon</strong> in the top right. Same form, pre-filled. Save with <span class="btn primary">Save Changes</span>.</p>
+
+<h3>AI solution matching</h3>
+<p>When you save a client with a sector/industry set, the app <strong>auto-matches</strong> AI solutions from the catalog (<code>/catalog</code>). You can see these on the client profile's right column.</p>
+
+<p>To re-trigger matching, edit the client and save — it will recompute.</p>
+
+<!-- ========================== SECTION 6 ========================== -->
+<h1 id="6-the-intro-brief">6. The intro brief</h1>
+
+<figure>
+  <img src="manual-assets/11-intro-with-whatsapp.png" alt="Intro brief">
+  <figcaption>The personalised intro — bio, pain points, AI solutions matched, indicative investment, and a 30-minute next step.</figcaption>
+</figure>
+
+<p>The intro brief is the most distinctive feature. Click <span class="btn primary">Generate Intro</span> on any client to generate a <strong>personalised 1-page document</strong> that explains:</p>
+
+<ul>
+  <li>What you noticed about their work</li>
+  <li>Where you can help (specific AI solutions, with estimated investment)</li>
+  <li>A clear 30-minute next step</li>
+</ul>
+
+<p>It's the document you'd send to a prospect to introduce yourself and your services. It reads as if you wrote it personally — because the AI is filling in the structure using <em>their</em> bio, <em>their</em> pain points, and <em>your</em> matched solutions.</p>
+
+<p>The brief is rendered as a clean printable page. From the top action bar:</p>
+<ul>
+  <li><span class="btn">Back to profile</span></li>
+  <li><span class="btn" style="background:#25D366;color:#fff;border-color:#25D366;">Share via WhatsApp</span> (green) — only shown if the client has a phone</li>
+  <li><span class="btn" style="background:#2563eb;color:#fff;border-color:#2563eb;">Share via Email</span> (blue) — uses mailto: with the full intro body</li>
+  <li><span class="btn">Copy Text</span> — copies the full intro to clipboard</li>
+  <li><span class="btn primary">Print / Save as PDF</span> — uses browser print</li>
+  <li><span class="btn" style="background:#ea580c;color:#fff;border-color:#ea580c;">Mark as Sent</span> — logs the intro as sent and updates <code>last_contact_at</code></li>
+</ul>
+
+<!-- ========================== SECTION 7 ========================== -->
+<h1 id="7-sharing-whatsapp--email">7. Sharing: WhatsApp &amp; Email</h1>
+
+<h3>WhatsApp</h3>
+<p>If a client has a phone number, the <strong>Share via WhatsApp</strong> button opens <code>https://wa.me/{phone}?text={intro body}</code> in a new tab. The phone is auto-formatted (South African numbers get +27 prefix).</p>
+
+<h3>Email</h3>
+<p>The <strong>Share via Email</strong> button works for any client (no phone needed). It opens your default mail client with:</p>
+<ul>
+  <li><strong>To:</strong> the client's email (if set; otherwise the field is empty for you to fill in)</li>
+  <li><strong>Subject:</strong> "Intro for {Name}"</li>
+  <li><strong>Body:</strong> the full intro brief, pre-formatted</li>
+</ul>
+
+<h3>Copy Text</h3>
+<p>Use the <strong>Copy Text</strong> button to copy the intro body to your clipboard, then paste anywhere — Slack DM, LinkedIn message, Notion doc.</p>
+
+<!-- ========================== SECTION 8 ========================== -->
+<h1 id="8-the-board-kanban">8. The board (kanban)</h1>
+
+<figure>
+  <img src="manual-assets/21-board-with-drag.png" alt="Board view">
+  <figcaption>Six columns: Not contacted, Pending review, Intro sent, Engaged, Won, Lost. Cards drag between columns.</figcaption>
+</figure>
+
+<p>The board (<code>/board</code>) shows all clients as cards in columns by status. <strong>Drag a card to a different column to change its status.</strong></p>
+
+<h3>What happens when you drag</h3>
+<ol>
+  <li>The card moves to the new column immediately (optimistic UI)</li>
+  <li>The status change is saved to the database via <code>POST /clients/:id/status</code></li>
+  <li>An interaction is logged: "Status changed: X → Y"</li>
+  <li>If the new status is "Engaged", "Won", or "Intro sent", the <code>last_contact_at</code> is updated to today</li>
+  <li>A toast confirms the move: "Moved to {status}"</li>
+</ol>
+
+<h3>"Drop here" placeholders</h3>
+<p>Empty columns show a dashed "Drop here" zone.</p>
+
+<h3>Hover actions</h3>
+<p>Hover any card to see the action icons (view, intro, edit).</p>
+
+<h3>Filtering</h3>
+<p>The search bar at the top filters by name, company, or bio. Use it to focus on a subset.</p>
+
+<!-- ========================== SECTION 9 ========================== -->
+<h1 id="9-the-calendar">9. The calendar</h1>
+
+<figure>
+  <img src="manual-assets/12-calendar.png" alt="Calendar view">
+  <figcaption>Month grid with color-coded events: blue for tasks, green for touches, red for overdue.</figcaption>
+</figure>
+
+<p>The calendar (<code>/calendar</code>) shows your scheduled work in a month view.</p>
+
+<h3>Event types</h3>
+<ul>
+  <li><strong>Blue (Tasks)</strong> — tasks from your projects with due dates</li>
+  <li><strong>Green (Touches)</strong> — outreach follow-ups for clients with cadence set</li>
+  <li><strong>Red (Overdue)</strong> — overdue tasks or touches past their date</li>
+</ul>
+
+<h3>Navigation</h3>
+<ul>
+  <li><strong>← / →</strong> — previous / next month</li>
+  <li><strong>Today</strong> — jump back to the current month</li>
+  <li>The <code>m=</code> query parameter lets you link directly to a specific month (e.g. <code>/calendar?m=2026-07</code>)</li>
+</ul>
+
+<h3>Upcoming Touches panel</h3>
+<p>The right side of the calendar shows the <strong>top 5 by next due</strong>, with day countdowns ("in 3d", "Today", "2d overdue").</p>
+
+<h3>Manage cadences</h3>
+<p>Click <strong>Manage cadences</strong> in the top right to jump to the client list filtered to people with cadence set.</p>
+
+<!-- ========================== SECTION 10 ========================== -->
+<h1 id="10-the-today-widget">10. The Today widget</h1>
+
+<figure>
+  <img src="manual-assets/13-today-widget.png" alt="Today widget">
+  <figcaption>4 stat cells (Overdue / Due today / Due this week / Touches due) and lists below.</figcaption>
+</figure>
+
+<p>The Today widget sits at the top of the dashboard. It shows:</p>
+<ul>
+  <li><strong>Overdue tasks</strong> (count + list, red if &gt; 0)</li>
+  <li><strong>Due today tasks</strong> (count + list, yellow if &gt; 0)</li>
+  <li><strong>Due this week tasks</strong> (count + list)</li>
+  <li><strong>Touches due</strong> — outreach follow-ups overdue or due today</li>
+</ul>
+
+<p>If a list is empty, the widget shows "Nothing due / No touches set."</p>
+
+<p>This is your "what should I focus on today" surface. It pulls from:</p>
+<ul>
+  <li>Tasks with <code>due_date</code> (across all your projects)</li>
+  <li>Clients with <code>next_followup_at</code> and <code>cadence_days</code> set</li>
+  <li>Last-touch + cadence math (next touch = last + cadence days)</li>
+</ul>
+
+<!-- ========================== SECTION 11 ========================== -->
+<h1 id="11-meeting-prep-ai">11. Meeting Prep (AI)</h1>
+
+<div class="callout"><strong>This is the killer feature.</strong> Before a client call, click <strong>Prep</strong> on the client profile. You get a 1-page briefing card synthesised from everything in your CRM.</div>
+
+<figure>
+  <img src="manual-assets/29-meeting-prep.png" alt="Meeting Prep">
+  <figcaption>Color-coded sections: Who they are, Where we are, Talking points, What I can offer, After this call, Open threads, Recent activity.</figcaption>
+</figure>
+
+<h3>What the prep page contains</h3>
+<ul>
+  <li><strong>Who they are</strong> — synthesised from bio + sector + tags</li>
+  <li><strong>Where we are</strong> — pipeline state summary (status, last contact, next step, cadence)</li>
+  <li><strong>Talking points</strong> — 3-5 questions generated from their pain points</li>
+  <li><strong>What I can offer</strong> — 2-4 AI solutions + why each fits them, with indicative pricing</li>
+  <li><strong>After this call</strong> — suggested next step (auto-generated based on status)</li>
+  <li><strong>Open threads</strong> — unresolved tasks</li>
+  <li><strong>Recent activity</strong> — last 5 interactions</li>
+</ul>
+
+<h3>Two modes</h3>
+
+<p><strong>Structured-only</strong> (no AI provider configured)</p>
+<p>The prep page assembles the brief from your data alone. No API call. No cost. Already useful.</p>
+
+<p><strong>AI-enhanced</strong> (provider configured)</p>
+<p>The configured provider is sent a context-rich prompt and returns a 1-paragraph synthesis for "Who they are" plus refined talking points and offer. The result is cached in <code>ai_prep_cache</code> for the session — hit <strong>Regenerate</strong> to force a fresh synthesis.</p>
+
+<h3>Graceful fallback</h3>
+<p>If the AI call fails (network error, bad key, rate limit), the page shows the structured-only brief with a yellow banner explaining the failure. You never lose the page.</p>
+
+<h3>Setting up an AI provider</h3>
+<p>See <a href="#18-admin-ai-providers">§18</a>.</p>
+
+<h3>When to use Prep</h3>
+<ul>
+  <li>5-10 minutes before any client call or meeting</li>
+  <li>Before replying to a long-overdue thread</li>
+  <li>When you're about to send a proposal and need to remember the context</li>
+  <li>When you're trying to remember "who is this person" in a meeting</li>
+</ul>
+
+<!-- ========================== SECTION 12 ========================== -->
+<h1 id="12-logging-activity">12. Logging activity</h1>
+
+<figure>
+  <img src="manual-assets/30-client-profile.png" alt="Client profile with Activity Log">
+  <figcaption>The Activity Log panel on the right of the client profile — type dropdown, status dropdown, summary, Log Activity button.</figcaption>
+</figure>
+
+<p>Every interaction with a client is logged in the <strong>Activity Log</strong> panel on the right of their profile.</p>
+
+<h3>Adding a log entry</h3>
+<ol>
+  <li>Pick the <strong>type</strong>: Note, Call, Email, WhatsApp, Meeting</li>
+  <li>Optionally pick a <strong>new status</strong> — if you change it here, the client moves to that pipeline stage (and a status-change interaction is auto-logged)</li>
+  <li>Type a short <strong>summary</strong> (one or two lines)</li>
+  <li>Click <span class="btn primary">Log Activity</span></li>
+</ol>
+
+<h3>What's auto-logged</h3>
+<ul>
+  <li>When you <strong>Mark intro as sent</strong> — interaction type "status" with summary "Status changed: X → Y"</li>
+  <li>When you <strong>drag a card on the board</strong> — same auto-log</li>
+  <li>When you <strong>edit a client</strong> — no log (only manual)</li>
+</ul>
+
+<h3>Reading the log</h3>
+<p>Interactions are listed newest-first. Each shows timestamp, type, and summary.</p>
+
+<!-- ========================== SECTION 13 ========================== -->
+<h1 id="13-pipeline-data-cadence-next-step-outcome">13. Pipeline data: cadence, next step, outcome</h1>
+
+<p>These three "operational" fields turn a contact database into a working pipeline.</p>
+
+<h3>Cadence (<code>cadence_days</code> + <code>last_contact_at</code>)</h3>
+<p>Set a touch cadence (every 3, 7, 14, 21, 30, 60, or 90 days). When set:</p>
+<ul>
+  <li>The client appears on the <strong>Calendar</strong> with their next touch date</li>
+  <li>The <strong>Today widget</strong> surfaces them when overdue</li>
+  <li><code>last_contact_at</code> is <strong>auto-updated</strong> when you mark intro sent or log a touch</li>
+</ul>
+
+<h3>Next step + follow-up date (<code>next_step</code> + <code>next_followup_at</code>)</h3>
+
+<figure>
+  <img src="manual-assets/23-client-next-step-panel.png" alt="Next step panel on client profile">
+  <figcaption>The Next step panel on the client profile — blue left border, the step text, the follow-up date.</figcaption>
+</figure>
+
+<p>The most useful two fields in the app. Every client should have:</p>
+<ul>
+  <li>A <strong>next step</strong> — one specific thing you'll do next (e.g. "Send tailored proposal", "Book 30-min call")</li>
+  <li>A <strong>follow-up date</strong> — when you'll do it</li>
+</ul>
+
+<p>These appear on the client's profile in a blue-bordered panel at the top of the right column.</p>
+
+<h3>Outcome (<code>won_value_zar</code> + <code>lost_reason</code>)</h3>
+<p>When a client moves to <strong>Won</strong> or <strong>Lost</strong>, the edit form shows the Outcome section:</p>
+<ul>
+  <li><strong>Won value (R)</strong> — the deal value in ZAR</li>
+  <li><strong>Lost reason</strong> — pick from: Price, Timing, No fit, Ghosted, Went with competitor, Other</li>
+</ul>
+
+<p>The profile shows a green "Won · R 350,000" pill or a red "Lost: Price" pill.</p>
+
+<p>These fields power future pipeline reporting (YTD won, conversion rates, lost-reason breakdown).</p>
+
+<!-- ========================== SECTION 14 ========================== -->
+<h1 id="14-file-attachments">14. File attachments</h1>
+
+<figure>
+  <img src="manual-assets/24-client-attachments.png" alt="File attachments">
+  <figcaption>Attachments panel on the client profile — Upload file button, list of files with size and delete.</figcaption>
+</figure>
+
+<p>Each client can have files attached: proposals, contracts, photos of business cards, PDFs.</p>
+
+<h3>Uploading</h3>
+<ol>
+  <li>On a client profile, scroll to the <strong>Attachments</strong> panel</li>
+  <li>Click <span class="btn">Upload file</span></li>
+  <li>Pick a file (max 10 MB)</li>
+  <li>The file is saved to <code>data/attachments/{client_id}/{timestamp}_{name}</code></li>
+  <li>The metadata (filename, mime type, size, upload date) goes into the <code>attachments</code> table</li>
+</ol>
+
+<h3>Downloading</h3>
+<p>Click any filename in the attachments list. The file downloads with the original filename (Content-Disposition header preserves it).</p>
+
+<h3>Deleting</h3>
+<p>Click the <strong>×</strong> next to any file. You'll be asked to confirm.</p>
+
+<h3>Storage</h3>
+<ul>
+  <li>Files live on disk at <code>data/attachments/</code></li>
+  <li>Database references them by path</li>
+  <li>Deleting a client cascades — <code>ON DELETE CASCADE</code> cleans up the file metadata. Files on disk need manual cleanup (we don't auto-delete on cascade, intentionally — backup first).</li>
+</ul>
+
+<h3>Limits</h3>
+<ul>
+  <li>Max 10 MB per file (configurable in <code>server.js</code>)</li>
+  <li>No file-type restrictions (don't upload executables in a shared environment)</li>
+</ul>
+
+<!-- ========================== SECTION 15 ========================== -->
+<h1 id="15-global-search-cm">15. Global search (Cmd+K)</h1>
+
+<figure>
+  <img src="manual-assets/20-cmdk-palette.png" alt="Cmd+K palette">
+  <figcaption>Cmd+K palette open with a search query — clients, projects, tasks results with keyboard navigation.</figcaption>
+</figure>
+
+<p>Press <kbd>Ctrl</kbd>+<kbd>K</kbd> (Windows/Linux) or <kbd>Cmd</kbd>+<kbd>K</kbd> (Mac) anywhere to open the global search palette.</p>
+
+<h3>What it searches</h3>
+<ul>
+  <li><strong>Clients</strong> — by name, company, bio, sector, industry, tags</li>
+  <li><strong>Projects</strong> — by name, description</li>
+  <li><strong>Tasks</strong> — by title</li>
+</ul>
+
+<h3>How to use</h3>
+<ol>
+  <li><kbd>Ctrl</kbd>+<kbd>K</kbd> opens the palette</li>
+  <li>Type a query — results update as you type (80ms debounce)</li>
+  <li><kbd>↑</kbd> / <kbd>↓</kbd> to move through results</li>
+  <li><kbd>Enter</kbd> to open the selected one</li>
+  <li><kbd>Esc</kbd> to close</li>
+  <li><kbd>n</kbd> to jump to "Add new client" (creates a new client with the search term as a starting name)</li>
+</ol>
+
+<h3>The "Add new client" action</h3>
+<p>If your query is 2+ characters and no client exists with that name, you get a quick action at the bottom of the palette: <strong>"Add new client named '{query}'"</strong>. Click it (or press <kbd>n</kbd>) to go to the new-client form pre-filled with that name.</p>
+
+<h3>Where it triggers</h3>
+<ul>
+  <li>Anywhere in the app, the keyboard shortcut works</li>
+  <li>Click the <strong>Search</strong> button in the top bar to open it with a mouse</li>
+</ul>
+
+<!-- ========================== SECTION 16 ========================== -->
+<h1 id="16-project-management">16. Project Management</h1>
+
+<p>Ngulube Hub has a built-in project + task tracker, so a deal and the work behind it live in the same place.</p>
+
+<h3>Projects</h3>
+<p>A project is a piece of work — usually tied to a client (a paid engagement, a proposal, a pilot).</p>
+
+<p><strong>Statuses:</strong> Concept → Scoping → Quoted → Active → (On hold) → Won | Lost</p>
+
+<p>Click <strong>Projects</strong> in the sidebar to see the kanban. Each project card shows name, status pill, due date, and pipeline value.</p>
+
+<h3>Tasks</h3>
+<p>Tasks live under projects. They have:</p>
+<ul>
+  <li>Title, description</li>
+  <li>Status (todo / in_progress / blocked / done)</li>
+  <li>Priority (low / normal / high / urgent)</li>
+  <li>Due date</li>
+  <li>Estimated hours / actual hours</li>
+  <li>Blocked reason (if blocked)</li>
+  <li>Comments thread</li>
+</ul>
+
+<h3>My Tasks</h3>
+<p>Click <strong>My Tasks</strong> to see everything assigned to you, across all projects, sorted by due date.</p>
+
+<h3>Idea Inbox</h3>
+<p>A quick-capture form on the dashboard for fleeting ideas. Type one line, hit <span class="btn">Capture</span>. The idea becomes a project in Concept status. Flesh it out later.</p>
+
+<h3>Best practice</h3>
+<p>Use the link between client and project: when you create a project, set its <code>client_id</code> to the related client. The project's status changes will mirror to the client's interactions timeline automatically.</p>
+
+<!-- ========================== SECTION 17 ========================== -->
+<h1 id="17-admin-managing-users">17. Admin: managing users</h1>
+
+<figure>
+  <img src="manual-assets/07-admin-users.png" alt="Admin Users page">
+  <figcaption>Table of users with role, last login, created, actions (edit, key, delete).</figcaption>
+</figure>
+
+<p>Only <strong>super-admins</strong> can access <code>/admin/users</code>. Regular admins can use the app but can't manage other users.</p>
+
+<h3>Adding a user</h3>
+<ol>
+  <li>Click <strong>Admin → Manage Admins</strong> in the sidebar</li>
+  <li>Fill in: Full name, Username, Password (min 6 chars), Role</li>
+  <li>Click <span class="btn primary">Add admin</span></li>
+</ol>
+
+<h3>Editing a user</h3>
+
+<figure>
+  <img src="manual-assets/08-admin-user-edit.png" alt="Edit user">
+  <figcaption>The Edit user form — change name, username, or role without deleting the account.</figcaption>
+</figure>
+
+<ol>
+  <li>Click the <strong>pencil icon</strong> on any user row</li>
+  <li>Change name, username, or role</li>
+  <li>Click <span class="btn primary">Save Changes</span></li>
+  <li>(Password is changed via the key icon — see below)</li>
+</ol>
+
+<h3>Resetting a password</h3>
+<ol>
+  <li>Click the <strong>key icon</strong> on any user row</li>
+  <li>Enter the new password (min 6 chars)</li>
+  <li>Click <span class="btn primary">Update password</span></li>
+</ol>
+
+<h3>Deleting a user</h3>
+<ol>
+  <li>Click the <strong>trash icon</strong> on any user row</li>
+  <li>Confirm</li>
+</ol>
+
+<div class="callout warn">
+  <strong>You cannot delete yourself.</strong> The system blocks this to prevent lockout.
+</div>
+
+<h3>Roles</h3>
+<ul>
+  <li><strong>Admin</strong> — read/write data (clients, projects, tasks, log activity)</li>
+  <li><strong>Super-admin</strong> — everything an admin can do, plus manage other admins and AI providers</li>
+</ul>
+
+<h3>The default super-admin</h3>
+<p>The first user created during setup is automatically a super-admin. They can promote others.</p>
+
+<!-- ========================== SECTION 18 ========================== -->
+<h1 id="18-admin-ai-providers">18. Admin: AI providers</h1>
+
+<figure>
+  <img src="manual-assets/25-providers-empty.png" alt="AI Providers empty state">
+  <figcaption>Empty state with Add provider form on the right. Add at least one to unlock AI features.</figcaption>
+</figure>
+
+<p>Ngulube Hub is <strong>provider-agnostic</strong> for AI features. You can configure one or more providers; the system uses the default and falls back through the priority chain.</p>
+
+<h3>Supported providers</h3>
+<table>
+  <thead><tr><th>Kind</th><th>Use for</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><strong>OpenAI</strong></td><td>gpt-4o-mini, gpt-4o, o3-mini</td><td>Cheapest, very good for short prompts</td></tr>
+    <tr><td><strong>Anthropic</strong></td><td>claude-sonnet-4-5, claude-3-5-haiku</td><td>Excellent for synthesis, safety-first</td></tr>
+    <tr><td><strong>OpenAI-compatible</strong></td><td>Ollama, OpenRouter, Groq, Together, LM Studio, vLLM, Mistral</td><td>Anything that mimics OpenAI's API</td></tr>
+  </tbody>
+</table>
+
+<h3>Adding a provider</h3>
+
+<figure>
+  <img src="manual-assets/26-provider-added.png" alt="Provider added">
+  <figcaption>Provider added with Default pill, kind/model/base URL/key status, action buttons.</figcaption>
+</figure>
+
+<ol>
+  <li>Click <strong>Admin → AI Providers</strong> in the sidebar</li>
+  <li>In the <strong>Add provider</strong> panel on the right:
+    <ul>
+      <li><strong>Display name</strong> — e.g. "OpenAI (primary)"</li>
+      <li><strong>Kind</strong> — openai / anthropic / openai_compat</li>
+      <li><strong>API key</strong> — paste your key</li>
+      <li><strong>Base URL</strong> — only for openai_compat (Ollama default is <code>http://localhost:11434/v1</code>)</li>
+      <li><strong>Model</strong> — e.g. <code>gpt-4o-mini</code></li>
+      <li><strong>Priority</strong> — lower number = tried first</li>
+      <li><strong>Set as default</strong> — checked by default</li>
+    </ul>
+  </li>
+  <li>Click <span class="btn primary">Add provider</span></li>
+</ol>
+
+<h3>Testing a connection</h3>
+
+<figure>
+  <img src="manual-assets/27-provider-test-failed.png" alt="Test failed">
+  <figcaption>Test connection with a fake key — fails gracefully with the API's own error message.</figcaption>
+</figure>
+
+<p>Click <span class="btn">Test connection</span> on any provider card. The system pings the API with a "ping" message and shows:</p>
+<ul>
+  <li>Green <span class="pill green">Tested OK</span> if it connects</li>
+  <li>Red <span class="pill" style="background:var(--red-bg);color:var(--red);">Test failed</span> with the error message if it doesn't</li>
+</ul>
+
+<h3>Setting a default</h3>
+<p>Click <span class="btn primary">Set as default</span> to make a provider the primary. Only one default at a time.</p>
+
+<h3>Enabling / disabling</h3>
+<p>Click <span class="btn">Disable</span> to turn off a provider without deleting it. The system will skip disabled providers when looking for one to use.</p>
+
+<h3>Failover</h3>
+<p>When a feature (like Meeting Prep) needs AI, the system tries the default first. If that fails, it falls through the priority chain to other enabled providers. If all fail, the structured-only fallback runs.</p>
+
+<h3>Editing</h3>
+
+<figure>
+  <img src="manual-assets/28-provider-edit.png" alt="Edit provider">
+  <figcaption>Edit page — pre-fills values, "(unchanged)" placeholder for the API key.</figcaption>
+</figure>
+
+<p>Click the <strong>pencil icon</strong> to edit. <strong>Leave the API key field blank to keep the existing key.</strong></p>
+
+<h3>Deleting</h3>
+<p>Click the <strong>trash icon</strong> to delete. The default provider cannot be deleted — set another one as default first.</p>
+
+<div class="callout warn">
+  <strong>Security note.</strong> API keys are stored in <em>plain text</em> in the SQLite database. For a personal tool this is acceptable. If you ever share hosting, rotate your keys. We document this in the admin UI.
+</div>
+
+<h3>Recommended setup for solo operators</h3>
+<ul>
+  <li><strong>One OpenAI provider</strong> with <code>gpt-4o-mini</code> as default. Cheapest, good enough for the prep prompt.</li>
+  <li><strong>One Ollama provider</strong> as a backup if you want to run fully local. Set base URL to <code>http://localhost:11434/v1</code> and model to <code>llama3.1</code> or <code>mistral</code>.</li>
+</ul>
+
+<!-- ========================== SECTION 19 ========================== -->
+<h1 id="19-public-join-form">19. Public join form</h1>
+
+<figure>
+  <img src="manual-assets/03-join-form.png" alt="Public join form">
+  <figcaption>The public-facing join form — anyone can submit, no login required.</figcaption>
+</figure>
+
+<p>Ngulube Hub has a public-facing form at <strong><code>/join</code></strong>. Anyone can submit their details, and a new client row is created in <span class="pill yellow">Pending review</span> status for you to approve or discard.</p>
+
+<h3>Use case</h3>
+<p>Share the link on LinkedIn, in your email signature, or via WhatsApp status. People who are interested in your services fill in the form; you get a structured lead instead of a random text.</p>
+
+<h3>What the join form collects</h3>
+<ul>
+  <li>Name, email, phone</li>
+  <li>Company, website</li>
+  <li>Sector, industry, sub-industry</li>
+  <li>A "what do you do" text box</li>
+  <li>A "what problems are you trying to solve" text box</li>
+</ul>
+
+<h3>The approval flow</h3>
+<p>New submissions land in your client list as <span class="pill yellow">Pending review</span>. On a pending client profile you'll see a yellow banner with two buttons:</p>
+<ul>
+  <li><span class="btn primary">Approve &amp; Add to Pipeline</span> — moves status to "Not contacted", client appears in your normal flow</li>
+  <li><span class="btn danger">Discard</span> — deletes the client</li>
+</ul>
+
+<h3>Where the form lives</h3>
+<ul>
+  <li><code>/join</code> — the form</li>
+  <li><code>/join</code> (after submit) — a thank-you screen</li>
+</ul>
+
+<h3>Linking to it</h3>
+<p>From the dashboard, click <strong>Share Join</strong> to copy the link. From any page, it's also in the top bar (link icon).</p>
+
+<!-- ========================== SECTION 20 ========================== -->
+<h1 id="20-csv-bulk-import">20. CSV bulk import</h1>
+
+<figure>
+  <img src="manual-assets/15-csv-import.png" alt="CSV import page">
+  <figcaption>Import page with format table, download template link, and paste textarea.</figcaption>
+</figure>
+
+<p>When you have a list of contacts to add in bulk — from an event, a spreadsheet, or another tool — use <strong>CSV import</strong> at <code>/import</code>.</p>
+
+<h3>How to use</h3>
+<ol>
+  <li>Click <strong>Import</strong> in the sidebar</li>
+  <li>Download the <strong>template</strong> (link at the top right of the import page) to see the expected format</li>
+  <li>Fill in your rows in any spreadsheet app, save as CSV</li>
+  <li>Paste the CSV into the textarea</li>
+  <li>Click <span class="btn primary">Import</span></li>
+</ol>
+
+<h3>CSV format</h3>
+<p>The first row must be headers. Supported columns:</p>
+<pre><code>name, title, company, email, phone, sector, industry, cadence_days</code></pre>
+
+<ul>
+  <li><code>name</code> is required</li>
+  <li>All other columns are optional</li>
+  <li><code>cadence_days</code> accepts: 3, 7, 14, 21, 30, 60, 90</li>
+  <li>Multi-line fields (focus_areas, pain_points) use newlines</li>
+  <li>Tags use comma-separated values</li>
+</ul>
+
+<h3>Limits</h3>
+<ul>
+  <li>Max 100 clients per import</li>
+  <li>Errors on individual rows don't fail the whole import — they're reported in the result</li>
+</ul>
+
+<h3>What the result shows</h3>
+<figure>
+  <img src="manual-assets/16-csv-import-result.png" alt="Import result">
+  <figcaption>Success: 3 clients imported, with a link back to dashboard or to add another manually.</figcaption>
+</figure>
+
+<figure>
+  <img src="manual-assets/18-csv-import-error.png" alt="Import error">
+  <figcaption>Error case: 0 clients imported + ISSUES section listing the unknown columns and the allowed ones.</figcaption>
+</figure>
+
+<!-- ========================== SECTION 21 ========================== -->
+<h1 id="21-best-practices">21. Best practices</h1>
+
+<h3>Daily rhythm</h3>
+<ol>
+  <li><strong>Morning:</strong> open the dashboard, scan the Today widget. What's the one thing to do first?</li>
+  <li><strong>Before any call:</strong> click Prep on the client. Read the brief. Set your anchor.</li>
+  <li><strong>After any interaction:</strong> open the client profile, log what happened, update the next step. This takes 30 seconds and compounds.</li>
+  <li><strong>End of day:</strong> check the Today widget again. Anything you missed moves to tomorrow.</li>
+</ol>
+
+<h3>Weekly rhythm</h3>
+<ol>
+  <li><strong>Monday:</strong> review the Board. Any cards stuck in "Intro sent" for 14+ days? Follow up.</li>
+  <li><strong>Wednesday:</strong> review the Calendar. Any touches due? Any tasks slipping?</li>
+  <li><strong>Friday:</strong> review the Today widget. Any tasks overdue? Any clients with no next step?</li>
+</ol>
+
+<h3>Pipeline hygiene</h3>
+<ul>
+  <li><strong>Every client should have a next step.</strong> If you can't think of one, they're effectively dead — either reach out or move them to "On hold".</li>
+  <li><strong>Update <code>last_contact_at</code> religiously.</strong> The cadence math depends on it. The app auto-updates on intro-sent and on touch logging — but if you call someone and don't log it, the system doesn't know.</li>
+  <li><strong>Set a cadence for clients you want to stay in touch with.</strong> 14 days is a good default for warm leads. 30 days for "stay-in-touch" relationships.</li>
+  <li><strong>Use Won / Lost to track outcomes.</strong> When you mark a client as Won, capture the deal value. When Lost, capture the reason. This is the data you'll need to know your real close rate.</li>
+</ul>
+
+<h3>Naming conventions</h3>
+<ul>
+  <li><strong>Name field:</strong> full name as the person writes it ("Thabiso Naleli", not "T. Naleli")</li>
+  <li><strong>Tags:</strong> lowercase, comma-separated, no spaces. e.g. <code>finance,advisory,wealth</code></li>
+  <li><strong>Status field:</strong> use the standard labels. Don't invent new ones.</li>
+</ul>
+
+<div class="callout">
+  <strong>The 30-day rule:</strong> after any major shipment, don't add new features for 30 days. Use the app, find real friction, then ask. The features built in response to real friction are the ones that matter.
+</div>
+
+<!-- ========================== SECTION 22 ========================== -->
+<h1 id="22-troubleshooting--faq">22. Troubleshooting &amp; FAQ</h1>
+
+<h3>I can't log in</h3>
+<ul>
+  <li>Confirm the URL (<code>https://ngulube.naleli.co.za</code>)</li>
+  <li>Check your username (case-sensitive)</li>
+  <li>Try the password reset flow — get a super-admin to reset it for you</li>
+</ul>
+
+<h3>I lost my password and there's only me</h3>
+<ul>
+  <li>SSH into the VPS</li>
+  <li>Run: <code>cd ~/ngulubehub &amp;&amp; node -e "require('./db/users').changePassword(1, 'new-password-here')"</code></li>
+  <li>Replace <code>1</code> with your user ID (usually 1) and set a new password</li>
+</ul>
+
+<h3>The AI Prep page shows "Structured only"</h3>
+<p>Either:</p>
+<ul>
+  <li>No AI provider is configured. Go to <code>/admin/providers</code> and add one.</li>
+  <li>The configured provider failed. Check the yellow error banner for the reason. Click <strong>Test connection</strong> to verify.</li>
+</ul>
+
+<h3>A file upload failed</h3>
+<ul>
+  <li>Check file size: max 10 MB</li>
+  <li>Try again — multipart uploads can fail on flaky networks</li>
+  <li>The page will show a yellow error banner with the specific reason</li>
+</ul>
+
+<h3>Drag-and-drop on the board isn't working</h3>
+<ul>
+  <li>Make sure you're on <code>/board</code> (not <code>/dashboard</code> or <code>/pipeline/...</code>)</li>
+  <li>On mobile, drag-and-drop is limited. Use the edit form or a status change via the Activity Log instead.</li>
+  <li>The card needs to land fully inside a column. A drop on the column header doesn't count.</li>
+</ul>
+
+<h3>A client's status is wrong</h3>
+<p>Three options:</p>
+<ul>
+  <li>Open the client, go to Activity Log, log a new entry with the correct status</li>
+  <li>Open the client, click Edit, change the Status dropdown, Save</li>
+  <li>On the Board view, drag the card to the correct column</li>
+</ul>
+
+<h3>The Calendar is empty</h3>
+<p>You need to set cadences on clients. Open each client, set a Touch cadence (e.g. "Every 2 weeks"). The Calendar populates with the next-touch dates.</p>
+
+<h3>Today's widget is empty</h3>
+<p>Either you have no tasks due this week (good!) or you have no clients with cadence set (set some). The widget tells you which.</p>
+
+<h3>I want to delete a client</h3>
+<p>Open their profile, click the <strong>trash icon</strong> in the top right, confirm. Cascades to interactions, attachments, and projects.</p>
+
+<h3>How do I back up my data?</h3>
+<ul>
+  <li><strong>Database:</strong> the SQLite file is at <code>data/ngulubehub.sqlite</code> on the VPS. Copy it.</li>
+  <li><strong>Attachments:</strong> the directory is at <code>data/attachments/</code>. Copy it.</li>
+  <li><strong>Automated:</strong> set up a cron job on the VPS to <code>cp data/ngulubehub.sqlite backups/$(date +%Y%m%d).sqlite</code> daily.</li>
+</ul>
+
+<h3>How do I deploy a new version?</h3>
+<pre><code>ssh naleli@157.173.99.185 "cd ~/ngulubehub && git pull --ff-only origin main && ./deploy.sh"</code></pre>
+<p>The <code>deploy.sh</code> script restarts the container with the latest code and runs any schema migrations automatically.</p>
+
+<h3>The deploy script needs new SSH keys</h3>
+<p>If GitHub rejects the deploy key:</p>
+<ol>
+  <li>Generate a new key on the VPS: <code>ssh-keygen -t ed25519 -f /root/.ssh/ngulube-deploy -N ''</code></li>
+  <li>Copy the public key (<code>cat /root/.ssh/ngulube-deploy.pub</code>)</li>
+  <li>Add it at <a href="https://github.com/settings/keys" target="_blank">https://github.com/settings/keys</a> with title <code>ngulube-deploy-{date}</code></li>
+  <li>Delete the old key first if it still works for some reason — confusion is the enemy.</li>
+</ol>
+
+<!-- ========================== SECTION 23 ========================== -->
+<h1 id="23-glossary">23. Glossary</h1>
+<table>
+  <tbody>
+    <tr><th>Brief</th><td>The personalised intro document for a client. Generated by AI from their data + your solutions. See <a href="#6-the-intro-brief">§6</a>.</td></tr>
+    <tr><th>Cadence</th><td>The recurring touch interval for a client (e.g. every 14 days). Drives the Calendar and Today widget.</td></tr>
+    <tr><th>CLI</th><td>Command-line interface.</td></tr>
+    <tr><th>Cmd+K palette</th><td>The global search palette, opened with Ctrl/Cmd+K.</td></tr>
+    <tr><th>CRM</th><td>Customer relationship management. This is one.</td></tr>
+    <tr><th>Kanban</th><td>The Board view, where clients are cards arranged by status columns.</td></tr>
+    <tr><th>Lead</th><td>Same as "client" in this app. Any business contact you're tracking.</td></tr>
+    <tr><th>Pipeline</th><td>The sequence of statuses from Not contacted → Intro sent → Engaged → Won or Lost.</td></tr>
+    <tr><th>Prep</th><td>The AI-synthesised meeting brief. See <a href="#11-meeting-prep-ai">§11</a>.</td></tr>
+    <tr><th>PM</th><td>Project management. The Projects + Tasks module.</td></tr>
+    <tr><th>Provider</th><td>An AI service (OpenAI, Anthropic, Ollama, etc.) configured in the system.</td></tr>
+    <tr><th>Touch</th><td>A point of contact with a client (call, email, WhatsApp, etc.).</td></tr>
+    <tr><th>Won / Lost</th><td>Terminal pipeline states. Won captures deal value; Lost captures reason.</td></tr>
+  </tbody>
+</table>
+
+<hr style="margin: 64px 0 24px; border: none; border-top: 1px solid var(--border);">
+<p style="text-align: center; color: var(--text-3); font-size: 13px;">
+  <em>This manual is version-controlled at <code>docs/USER_MANUAL.md</code> in the project repository. To update it, edit the markdown, push, and re-render <code>docs/manual.html</code>.</em><br>
+  Ngulube Hub v1.0 · 2026-06-13
+</p>
+
+</main>
+</div>
+</body>
+</html>
