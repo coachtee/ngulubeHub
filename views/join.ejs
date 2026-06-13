@@ -10,28 +10,28 @@
   <style>
     body {
       align-items: flex-start;
+      background: var(--bg);
       padding: 32px 16px;
     }
     .join-shell { max-width: 720px; margin: 24px auto; position: relative; z-index: 1; }
     .join-card {
       background: var(--surface);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--border);
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      box-shadow: var(--shadow-md);
     }
     .join-hero {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(31, 45, 92, 0.3) 100%);
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
       border-bottom: 1px solid var(--border);
       padding: 32px 36px 24px;
+      color: #fff;
     }
     .join-hero .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
     .join-hero .brand img { width: 26px; height: 26px; }
-    .join-hero .brand .word { font-weight: 700; font-size: 14px; color: var(--text); }
-    .join-hero h1 { font-size: 26px; font-weight: 700; margin: 0; color: var(--text); }
-    .join-hero p { font-size: 14px; color: var(--text-2); margin: 8px 0 0; line-height: 1.5; }
+    .join-hero .brand .word { font-weight: 700; font-size: 14px; color: #fff; }
+    .join-hero h1 { font-size: 26px; font-weight: 700; margin: 0; color: #fff; }
+    .join-hero p { font-size: 14px; color: rgba(255,255,255,0.85); margin: 8px 0 0; line-height: 1.5; }
     .join-form { padding: 28px 36px 24px; }
     .join-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
     .join-form .row .full { grid-column: 1 / -1; }
@@ -39,18 +39,17 @@
     .join-form label .req { color: var(--red); }
     .join-form input, .join-form select, .join-form textarea {
       width: 100%; padding: 11px 14px; height: 44px;
-      background: var(--bg);
-      border: 1px solid var(--border);
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
       border-radius: 8px;
       font-size: 14px; color: var(--text);
-      outline: none; transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+      outline: none; transition: border-color 0.12s, box-shadow 0.12s;
       font-family: inherit;
     }
     .join-form textarea { height: auto; min-height: 80px; padding: 10px 14px; resize: vertical; }
     .join-form input::placeholder, .join-form textarea::placeholder { color: var(--text-3); }
     .join-form input:focus, .join-form select:focus, .join-form textarea:focus {
       border-color: var(--accent);
-      background: rgba(59, 130, 246, 0.05);
       box-shadow: 0 0 0 3px var(--accent-glow);
     }
     .join-form .field { margin-bottom: 14px; }
@@ -69,20 +68,20 @@
       display: inline-flex; align-items: center; gap: 6px;
       transition: background 0.15s, transform 0.05s, box-shadow 0.15s;
     }
-    .btn-submit:hover { background: var(--accent-hover); box-shadow: 0 0 24px var(--accent-glow); }
+    .btn-submit:hover { background: var(--accent-hover); box-shadow: 0 6px 20px var(--accent-glow); }
     .btn-submit:active { transform: translateY(1px); }
     .join-form .privacy { font-size: 11.5px; color: var(--text-3); line-height: 1.5; margin-top: 18px; }
     .join-form .privacy a { color: var(--accent); }
     .ok-banner {
-      background: var(--ok-bg); color: var(--ok);
-      border: 1px solid rgba(34, 197, 94, 0.2);
+      background: var(--green-bg); color: #166534;
+      border: 1px solid #86efac;
       border-radius: 8px; padding: 14px 18px;
       margin: 16px 36px 0; font-size: 13.5px;
     }
-    .ok-banner strong { color: #4ade80; }
+    .ok-banner strong { color: #15803d; }
     .err-banner {
-      background: var(--err-bg); color: var(--err);
-      border: 1px solid rgba(239, 68, 68, 0.2);
+      background: var(--red-bg); color: #991b1b;
+      border: 1px solid #fca5a5;
       border-radius: 8px; padding: 14px 18px;
       margin: 16px 36px 0; font-size: 13.5px;
     }
@@ -115,7 +114,7 @@
         </div>
         <div class="join-form" style="padding-top: 24px;">
           <p style="text-align: center; color: var(--text-2); font-size: 14px;">Want to refer someone who'd be a great fit?</p>
-          <p style="text-align: center;"><a href="/join" class="btn-submit" style="background: var(--accent);">Submit another person</a></p>
+          <p style="text-align: center;"><a href="/join" class="btn-submit">Submit another person</a></p>
         </div>
       <% } else { %>
         <% if (typeof error !== 'undefined' && error) { %>

@@ -1,0 +1,13 @@
+{
+  "passed": 1,
+  "failed": 0,
+  "total": 1,
+  "results": [
+    {
+      "test": "Login works",
+      "status": "PASS",
+      "note": ""
+    }
+  ],
+  "console_errors": []
+}
