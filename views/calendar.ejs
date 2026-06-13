@@ -1,0 +1,138 @@
+<% const title = 'Calendar — Ngulube Hub'; const active = 'calendar'; %>
+<%- include('partials/head', { title, active }) %>
+<div class="app-shell">
+<%- include('partials/nav') %>
+<main class="main">
+<%- include('partials/topbar') %>
+<div class="content">
+
+  <header class="d-flex flex-wrap justify-between items-center mb-3" style="gap: 12px;">
+    <div>
+      <h1 style="font-size: 22px; font-weight: 700; margin: 0;"><i class="bi bi-calendar3"></i> Calendar</h1>
+      <p class="text-muted mb-0" style="font-size: 13px; margin-top: 2px;">Tasks due + outreach touches scheduled</p>
+    </div>
+    <div>
+      <a class="btn" href="/clients"><i class="bi bi-people"></i> Manage cadences</a>
+    </div>
+  </header>
+
+  <% const monthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][month - 1]; %>
+  <% const today = new Date(); %>
+  <% const todayStr = today.toISOString().slice(0, 10); %>
+  <% const firstDay = new Date(year, month - 1, 1); %>
+  <% const daysInMonth = new Date(year, month, 0).getDate(); %>
+  <% const startWeekday = firstDay.getDay(); // 0=Sun, 1=Mon, ... %>
+  <% const prevMonth = month === 1 ? 12 : month - 1; %>
+  <% const prevYear = month === 1 ? year - 1 : year; %>
+  <% const nextMonth = month === 12 ? 1 : month + 1; %>
+  <% const nextYear = month === 12 ? year + 1 : year; %>
+
+  <% // Group events by date for fast lookup
+     const eventsByDate = {};
+     for (const e of events) {
+       if (!eventsByDate[e.date]) eventsByDate[e.date] = [];
+       eventsByDate[e.date].push(e);
+     }
+  %>
+
+  <!-- Month nav -->
+  <div class="d-flex items-center justify-between mb-3" style="gap: 8px;">
+    <div class="d-flex gap-1 items-center">
+      <a class="btn" href="?y=<%= prevYear %>&m=<%= prevMonth %>"><i class="bi bi-chevron-left"></i></a>
+      <h2 style="font-size: 18px; font-weight: 600; margin: 0; min-width: 180px; text-align: center;"><%= monthName %> <%= year %></h2>
+      <a class="btn" href="?y=<%= nextYear %>&m=<%= nextMonth %>"><i class="bi bi-chevron-right"></i></a>
+      <a class="btn" href="?y=<%= today.getFullYear() %>&m=<%= today.getMonth() + 1 %>">Today</a>
+    </div>
+    <div class="d-flex gap-2" style="font-size: 12px; color: var(--text-2);">
+      <span><span style="display:inline-block; width:10px; height:10px; background: var(--accent); border-radius:2px; vertical-align: middle; margin-right: 4px;"></span> Tasks</span>
+      <span><span style="display:inline-block; width:10px; height:10px; background: var(--green); border-radius:2px; vertical-align: middle; margin-right: 4px;"></span> Touches</span>
+      <span><span style="display:inline-block; width:10px; height:10px; background: var(--red); border-radius:2px; vertical-align: middle; margin-right: 4px;"></span> Overdue</span>
+    </div>
+  </div>
+
+  <div class="cal-grid">
+    <!-- Weekday headers -->
+    <% ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => { %>
+      <div class="cal-weekday"><%= d %></div>
+    <% }) %>
+
+    <!-- Pad start of month -->
+    <% for (let i = 0; i < startWeekday; i++) { %>
+      <div class="cal-day cal-day-empty"></div>
+    <% } %>
+
+    <!-- Days -->
+    <% for (let day = 1; day <= daysInMonth; day++) {
+         const dateStr = year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+         const dayEvents = eventsByDate[dateStr] || [];
+         const isToday = dateStr === todayStr;
+    %>
+      <div class="cal-day <%= isToday ? 'cal-day-today' : '' %>">
+        <div class="cal-day-num"><%= day %></div>
+        <% if (dayEvents.length) { %>
+          <div class="cal-events">
+            <% dayEvents.slice(0, 4).forEach(e => { %>
+              <% if (e.kind === 'task') { %>
+                <a class="cal-event cal-event-task priority-<%= e.priority || 'normal' %>" href="/projects/<%= e.project_id %>" title="<%= e.title %>">
+                  <i class="bi bi-check2-square"></i>
+                  <span class="cal-event-text"><%= e.title %></span>
+                </a>
+              <% } else { %>
+                <a class="cal-event cal-event-touch <%= e.is_overdue ? 'cal-event-overdue' : '' %>" href="/clients/<%= e.client_id %>" title="<%= e.title %>">
+                  <i class="bi bi-person-raised-hand"></i>
+                  <span class="cal-event-text"><%= e.title %></span>
+                </a>
+              <% } %>
+            <% }) %>
+            <% if (dayEvents.length > 4) { %>
+              <div class="cal-more">+<%= dayEvents.length - 4 %> more</div>
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Upcoming touches side panel -->
+  <div class="panel mt-3">
+    <div class="panel-head">
+      <i class="bi bi-person-raised-hand"></i> Upcoming Touches
+      <div class="right">
+        <span class="text-muted" style="font-size: 12px;">Top 5 by next due</span>
+      </div>
+    </div>
+    <div class="panel-body" style="padding: 0;">
+      <% if (!upcomingTouches.length) { %>
+        <div class="empty" style="padding: 20px;">
+          <i class="bi bi-inbox"></i>
+          <div class="t">No touches scheduled</div>
+          <div class="s">Set cadences on clients to populate this calendar.</div>
+        </div>
+      <% } %>
+      <% upcomingTouches.forEach(t => { %>
+        <a href="/clients/<%= t.client_id %>" class="my-task-row">
+          <div class="mt-status">
+            <i class="bi bi-circle-fill" style="color: <%= t.is_overdue ? 'var(--red)' : t.days_until === 0 ? 'var(--yellow)' : 'var(--blue)' %>; font-size: 10px;"></i>
+          </div>
+          <div class="mt-body">
+            <div class="mt-title"><%= t.client_name %><% if (t.company) { %> · <span style="color: var(--text-3); font-weight: normal;"><%= t.company %></span><% } %></div>
+            <div class="mt-meta">
+              <span><i class="bi bi-calendar"></i> <%= t.next_date %></span>
+              <% if (t.is_overdue) { %>
+                <span style="color: var(--red); font-weight: 500;"><i class="bi bi-exclamation-triangle"></i> <%= Math.abs(t.days_until) %> day<%= Math.abs(t.days_until) === 1 ? '' : 's' %> overdue</span>
+              <% } else if (t.days_until === 0) { %>
+                <span style="color: var(--yellow); font-weight: 500;">Due today</span>
+              <% } else { %>
+                <span>in <%= t.days_until %> day<%= t.days_until === 1 ? '' : 's' %></span>
+              <% } %>
+            </div>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+
+</div>
+</main>
+</div>
+<%- include('partials/foot') %>

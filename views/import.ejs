@@ -1,0 +1,105 @@
+<% const title = 'Import clients from CSV'; const active = 'dashboard'; %>
+<%- include('partials/head', { title, active }) %>
+<div class="app-shell">
+<%- include('partials/nav') %>
+<main class="main">
+<%- include('partials/topbar') %>
+<div class="content" style="max-width: 920px;">
+
+  <header class="d-flex flex-wrap justify-between items-center mb-3" style="gap: 12px;">
+    <div>
+      <h1 style="font-size: 22px; font-weight: 700; margin: 0;"><i class="bi bi-upload"></i> Import clients from CSV</h1>
+      <p class="text-muted mb-0" style="font-size: 13px; margin-top: 2px;">Bulk-add up to 100 clients at once. First row must be the column headers.</p>
+    </div>
+  </header>
+
+  <% if (locals.error) { %>
+    <div style="background: var(--red-bg); color: #991b1b; border: 1px solid #fca5a5; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px;">
+      <i class="bi bi-exclamation-triangle"></i> <%= error %>
+    </div>
+  <% } %>
+
+  <% if (locals.result) { %>
+    <div class="panel mb-3" style="border-left: 3px solid <%= result.errors && result.errors.length ? 'var(--yellow)' : 'var(--green)' %>;">
+      <div class="panel-head">
+        <i class="bi bi-check-circle"></i> Import complete
+      </div>
+      <div class="panel-body">
+        <p style="font-size: 14px; margin: 0 0 12px;">
+          <strong style="font-size: 18px; color: var(--green);"><%= result.inserted %></strong> clients imported.
+          <% if (result.skipped) { %>
+            <span style="color: var(--text-3);">· <%= result.skipped %> skipped.</span>
+          <% } %>
+        </p>
+        <% if (result.errors && result.errors.length) { %>
+          <h6 style="font-size: 12px; color: var(--text-3); text-transform: uppercase; margin: 14px 0 6px;">Issues</h6>
+          <ul style="font-size: 12.5px; color: var(--red); margin: 0; padding-left: 20px;">
+            <% result.errors.forEach(e => { %><li><%= e %></li><% }) %>
+          </ul>
+        <% } %>
+        <div style="margin-top: 14px;">
+          <a class="btn primary" href="/">Back to dashboard</a>
+          <a class="btn" href="/clients/new">Add another manually</a>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="panel">
+    <div class="panel-head">
+      <i class="bi bi-info-circle"></i> Format
+      <div class="right">
+        <a class="btn ghost sm" href="/import/template.csv" download><i class="bi bi-download"></i> Download template</a>
+      </div>
+    </div>
+    <div class="panel-body" style="padding: 0;">
+      <table class="t" style="font-size: 12.5px;">
+        <thead>
+          <tr>
+            <th>name *</th>
+            <th>title</th>
+            <th>company</th>
+            <th>email</th>
+            <th>phone</th>
+            <th>sector</th>
+            <th>industry</th>
+            <th>cadence_days</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="color: var(--text-3);">
+            <td>Teddy Sibuyi</td>
+            <td>Financial Planner</td>
+            <td>Sibuyi Wealth</td>
+            <td>teddy@example.com</td>
+            <td>076 123 4567</td>
+            <td>Finance</td>
+            <td>Financial Advisory</td>
+            <td>14</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="padding: 12px 18px; background: var(--surface-2); font-size: 12px; color: var(--text-3);">
+        <strong>name</strong> is required. The other columns are optional. <strong>cadence_days</strong> sets the outreach cadence (7, 14, 21, 30, 60, 90 are common).
+        You can also pipe-multiline fields: <code>focus_areas</code> as one-per-line, <code>tags</code> as comma-separated.
+      </div>
+    </div>
+  </div>
+
+  <form method="POST" action="/import" class="panel mt-3">
+    <div class="panel-head">
+      <i class="bi bi-clipboard-data"></i> Paste your CSV
+    </div>
+    <div class="panel-body">
+      <textarea name="csv" required rows="14" style="width: 100%; padding: 12px; border: 1.5px solid var(--border-strong); border-radius: 8px; font-family: ui-monospace, monospace; font-size: 13px; line-height: 1.5; color: var(--text); background: var(--bg); outline: none;" placeholder="name,title,company,email,phone,sector,industry,cadence_days&#10;Teddy Sibuyi,Financial Planner,Sibuyi Wealth,teddy@example.com,076 123 4567,Finance,Financial Advisory,14&#10;..."></textarea>
+      <div class="d-flex gap-1" style="margin-top: 12px;">
+        <button type="submit" class="btn primary"><i class="bi bi-upload"></i> Import</button>
+        <a class="btn ghost" href="/">Cancel</a>
+      </div>
+    </div>
+  </form>
+
+</div>
+</main>
+</div>
+<%- include('partials/foot') %>

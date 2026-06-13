@@ -1,0 +1,8 @@
+name,title,company,email,phone,sector,industry,sub_industry,region,bio,focus_areas,pain_points,tags,source,notes,cadence_days
+"Teddy Sibuyi","Financial Planner","Sibuyi Wealth","teddy@example.com","076 123 4567",Finance,"Financial Advisory","Wealth Management",SouthAfrica,"Helps families plan retirement","Retirement planning
+Investment planning
+Tax-efficient structuring","Repetitive fact-find
+Manual KYC","advisor,wealth",Referral,"Met at the BizPortal event",14
+"Seth Ratshitanga","Banker","Standard Bank","seth@example.com","082 111 2222",Finance,Banking,"Home loans",SouthAfrica,"Personal banker focused on home loans","Home loans
+Asset finance","Slow KYC
+Manual underwriting","banker,loans","Direct contact","",14

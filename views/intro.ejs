@@ -18,15 +18,42 @@
   }
 </style>
 
-<div class="no-print" style="display: flex; justify-content: space-between; max-width: 800px; margin: 0 auto 12px;">
+<div class="no-print" style="display: flex; justify-content: space-between; max-width: 800px; margin: 0 auto 12px; flex-wrap: wrap; gap: 8px;">
   <a href="/clients/<%= client.id %>" class="btn"><i class="bi bi-arrow-left"></i> Back to profile</a>
-  <div>
+  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+    <% if (client.contact_phone) { %>
+      <a class="btn" style="background: #25D366; color: #fff; border-color: #25D366;" href="#" onclick="shareOnWhatsApp('<%= client.contact_phone %>', '<%= client.name %>'); return false;">
+        <i class="bi bi-whatsapp"></i> Share via WhatsApp
+      </a>
+    <% } %>
+    <button class="btn" onclick="copyIntroToClipboard()" title="Copy intro text to clipboard"><i class="bi bi-clipboard"></i> Copy Text</button>
     <button class="btn primary" onclick="window.print()"><i class="bi bi-printer"></i> Print / Save as PDF</button>
     <form method="post" action="/clients/<%= client.id %>/mark-intro-sent" style="display: inline-block;">
       <button class="btn accent" onclick="return confirm('Mark this intro as sent?')"><i class="bi bi-send-check"></i> Mark as Sent</button>
     </form>
   </div>
 </div>
+
+<script>
+function shareOnWhatsApp(phone, name) {
+  // Strip non-digits and add SA country code if missing
+  let digits = (phone || '').replace(/\D/g, '');
+  if (digits.startsWith('0')) digits = '27' + digits.slice(1);
+  else if (digits.length === 9 && !digits.startsWith('27')) digits = '27' + digits;
+  const introText = document.getElementById('intro-text').value;
+  const url = 'https://wa.me/' + digits + '?text=' + encodeURIComponent(introText);
+  window.open(url, '_blank');
+}
+function copyIntroToClipboard() {
+  const text = document.getElementById('intro-text').value;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target.closest('button');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+    setTimeout(() => { btn.innerHTML = orig; }, 2000);
+  });
+}
+</script>
 
 <div class="intro-page">
   <header class="d-flex justify-between items-start" style="padding-bottom: 16px; border-bottom: 2px solid var(--brand);">
@@ -84,6 +111,39 @@
     <p class="meta mb-0">[Your title] · [Phone] · [Email] · [Website]</p>
   </div>
 </div>
+
+<textarea id="intro-text" style="position: absolute; left: -9999px;" readonly>Hello <%= firstName %>,
+
+This is <%= client.name %>'s personalised brief from NgulubeHub.
+
+<%= hook %>
+
+WHAT I NOTICED ABOUT YOUR WORK
+You operate in <%= client.industry || client.sector %><%= client.sub_industry ? ' — ' + client.sub_industry : '' %>. The leaders we work with in this space tell us the same three things:
+<% if ((client.pain_points || []).length) { %>
+<% client.pain_points.slice(0, 4).forEach((p, i) => { %>  <%= i + 1 %>. <%= p %>
+<% }) %>
+<% } %>
+WHERE WE CAN HELP
+Based on your focus areas and the kind of work you do, here are the AI solutions where we see the strongest fit:
+<% matches.forEach((m, idx) => { %>
+  <%= idx + 1 %>. <%= m.name %><% if (m.category) { %> (<%= m.category %>)<% } %>
+     <%= m.description %><% if (m.est_value) { %> | Indicative investment: <%= m.est_value %><% } %>
+
+<% }) %>
+<% if (totalLow > 0) { %>Indicative first-year range: ZAR <%= (totalLow/1000).toFixed(0) %>k – <%= (totalHigh/1000).toFixed(0) %>k (setup + 12 months support, tailored to your scope).<% } %>
+
+A 30-MINUTE NEXT STEP
+I won't pitch you a deck. I'd rather use 30 minutes to:
+- Walk through 1–2 of the solutions above with a real demo
+- Identify one quick win you could ship in 2–4 weeks that pays for itself
+- Be honest about where AI is not the right answer
+
+If any of that resonates, just reply with two or three times that work for you in the next two weeks — I'll send a calendar link.
+
+— [Your name]
+  [Your title] · [Phone] · [Email] · [Website]
+</textarea>
 
 </div>
 </main>

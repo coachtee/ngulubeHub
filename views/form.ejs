@@ -105,6 +105,37 @@
         </div>
       </div>
 
+      <div class="form-section-title">Outreach cadence</div>
+      <div class="form-grid">
+        <div>
+          <div class="form-group">
+            <label>Last contacted</label>
+            <input type="date" name="last_contact_at" value="<%= client && client.last_contact_at ? client.last_contact_at : '' %>">
+            <div style="font-size: 11px; color: var(--text-3); margin-top: 4px;">Auto-updates when you mark an intro sent or log a touch.</div>
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label>Touch cadence</label>
+            <select name="cadence_days">
+              <option value="">— No cadence —</option>
+              <% [
+                ['3','Every 3 days'],
+                ['7','Every week'],
+                ['14','Every 2 weeks'],
+                ['21','Every 3 weeks'],
+                ['30','Every month'],
+                ['60','Every 2 months'],
+                ['90','Every quarter'],
+              ].forEach(([v,l]) => { %>
+                <option value="<%= v %>" <%= client && String(client.cadence_days) === v ? 'selected' : '' %>><%= l %></option>
+              <% }) %>
+            </select>
+            <div style="font-size: 11px; color: var(--text-3); margin-top: 4px;">When set, this client appears on the Calendar.</div>
+          </div>
+        </div>
+      </div>
+
       <div class="form-section-title">Notes (private, internal)</div>
       <div class="form-grid">
         <div class="form-group full">
@@ -114,7 +145,7 @@
 
       <div class="form-actions">
         <a href="<%= client ? '/clients/' + client.id : '/' %>" class="btn ghost">Cancel</a>
-        <button class="btn primary"><i class="bi bi-save"></i> <%= client ? 'Save Changes' : 'Create Client' %></button>
+        <button type="submit" class="btn primary" name="action" value="save"><i class="bi bi-save"></i> <%= client ? 'Save Changes' : 'Create Client' %></button>
       </div>
     </div>
   </form>

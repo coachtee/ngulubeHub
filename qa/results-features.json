@@ -1,0 +1,133 @@
+{
+  "passed": 25,
+  "failed": 0,
+  "total": 25,
+  "results": [
+    {
+      "test": "WhatsApp share button visible on intro with phone",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Copy Text button visible",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Hidden intro-text textarea exists",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "intro-text has body content",
+      "status": "PASS",
+      "note": "preview=Hello Teddy,\n\nThis is Teddy's personalised brief f"
+    },
+    {
+      "test": "wa.me URL pattern",
+      "status": "PASS",
+      "note": "url=https://wa.me/27761234567?text=Hello%20Teddy%2C%0A%0AThis%20is%20Teddy's%20personalised%20brief%20f"
+    },
+    {
+      "test": "Calendar page loads",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Calendar has 7 weekday headers",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Calendar has day cells",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Month navigation works",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Today link returns to current month",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Upcoming Touches panel present",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Today widget on dashboard",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Today widget has 4 quick counts",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Cadence field in client edit form",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Last contacted field in client edit form",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Saved cadence redirect to client",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Cadence persisted (value=14)",
+      "status": "PASS",
+      "note": "got=14"
+    },
+    {
+      "test": "Import page loads",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Template download link present",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Import shows success message",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Import inserted 3 clients",
+      "status": "PASS",
+      "note": "text around: imported.\n          \n        </p>\n        \n       "
+    },
+    {
+      "test": "Search shows the imported clients",
+      "status": "PASS",
+      "note": "count=3"
+    },
+    {
+      "test": "Invalid CSV shows error",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Mobile calendar loads",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "test": "Mobile import page loads",
+      "status": "PASS",
+      "note": ""
+    }
+  ],
+  "console_errors": []
+}

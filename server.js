@@ -7,6 +7,20 @@ const path = require('path');
 const db = require('./db/schema');
 const users = require('./db/users');
 const projects = require('./db/projects');
+const calendar = require('./db/calendar');
+const today = require('./db/today');
+const importer = require('./db/import');
+
+// Lightweight migrations for live DB upgrades
+(function migrate(){
+  const cols = db.prepare("PRAGMA table_info(clients)").all().map(c => c.name);
+  if (!cols.includes('last_contact_at')) {
+    try { db.exec("ALTER TABLE clients ADD COLUMN last_contact_at TEXT"); } catch (_) {}
+  }
+  if (!cols.includes('cadence_days')) {
+    try { db.exec("ALTER TABLE clients ADD COLUMN cadence_days INTEGER"); } catch (_) {}
+  }
+})();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -221,10 +235,13 @@ function dashboardHandler(req, res) {
   const recentIdeas = db.prepare("SELECT id, name, created_at FROM projects WHERE status = 'concept' AND archived = 0 ORDER BY created_at DESC LIMIT 3").all();
   const activeProjects = db.prepare("SELECT id, name, status, target_end_date, est_value_zar FROM projects WHERE status IN ('active','scoping','quoted') AND archived = 0 ORDER BY updated_at DESC LIMIT 4").all();
 
+  // Today widget (new in feature 3)
+  const todayData = today.getToday();
+
   res.render('dashboard', {
     clients, sectors, statuses, q, sector, status, stats,
     projectStats, myUpcomingTasks, recentIdeas, activeProjects,
-    projects, active: 'dashboard',
+    todayData, projects, active: 'dashboard',
   });
 }
 app.get('/', requireAuth, dashboardHandler);
@@ -290,8 +307,8 @@ app.post('/clients', requireAuth, (req, res) => {
     const insert = db.prepare(`
       INSERT INTO clients (name, title, company, website, sector, industry, sub_industry, bio,
         focus_areas, pain_points, ai_solutions, tags, contact_email, contact_phone,
-        intro_status, source, notes, region)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        intro_status, source, notes, region, last_contact_at, cadence_days)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `);
     const result = insert.run(
       fmt(b.name), fmt(b.title), fmt(b.company), fmt(b.website),
@@ -305,6 +322,8 @@ app.post('/clients', requireAuth, (req, res) => {
       fmt(b.source) || 'Direct add',
       fmt(b.notes),
       fmt(b.region) || 'South Africa',
+      b.last_contact_at || null,
+      b.cadence_days ? parseInt(b.cadence_days) : null,
     );
     res.redirect(`/clients/${result.lastInsertRowid}`);
   } catch (e) {
@@ -327,7 +346,8 @@ app.post('/clients/:id', requireAuth, (req, res) => {
       UPDATE clients SET
         name=?, title=?, company=?, website=?, sector=?, industry=?, sub_industry=?, bio=?,
         focus_areas=?, pain_points=?, ai_solutions=?, tags=?, contact_email=?, contact_phone=?,
-        intro_status=?, source=?, notes=?, region=?, updated_at=CURRENT_TIMESTAMP
+        intro_status=?, source=?, notes=?, region=?, last_contact_at=?, cadence_days=?,
+        updated_at=CURRENT_TIMESTAMP
       WHERE id=?
     `);
     update.run(
@@ -345,6 +365,8 @@ app.post('/clients/:id', requireAuth, (req, res) => {
       fmt(b.source),
       fmt(b.notes),
       fmt(b.region) || 'South Africa',
+      b.last_contact_at || null,
+      b.cadence_days ? parseInt(b.cadence_days) : null,
       req.params.id,
     );
     res.redirect(`/clients/${req.params.id}`);
@@ -364,6 +386,8 @@ app.post('/clients/:id/interactions', requireAuth, (req, res) => {
   db.prepare('INSERT INTO interactions (client_id, type, summary) VALUES (?, ?, ?)').run(
     req.params.id, fmt(b.type) || 'note', fmt(b.summary),
   );
+  // Auto-update last_contact_at so the calendar cadence stays current
+  db.prepare('UPDATE clients SET last_contact_at = COALESCE(DATE("now"), DATE("now")) WHERE id = ?').run(req.params.id);
   if (b.new_status) {
     db.prepare('UPDATE clients SET intro_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(fmt(b.new_status), req.params.id);
   }
@@ -386,7 +410,7 @@ app.get('/clients/:id/intro', requireAuth, (req, res) => {
 });
 
 app.post('/clients/:id/mark-intro-sent', requireAuth, (req, res) => {
-  db.prepare('UPDATE clients SET intro_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run('Intro sent', req.params.id);
+  db.prepare('UPDATE clients SET intro_status = ?, last_contact_at = DATE("now"), updated_at = CURRENT_TIMESTAMP WHERE id = ?').run('Intro sent', req.params.id);
   db.prepare('INSERT INTO interactions (client_id, type, summary) VALUES (?, ?, ?)').run(req.params.id, 'intro_sent', 'Intro brief generated and sent');
   flash(req, 'success', 'Marked as intro sent.');
   res.redirect(`/clients/${req.params.id}`);
@@ -565,6 +589,37 @@ app.get('/tasks', requireAuth, (req, res) => {
     active: 'tasks',
     myTasks, upcoming,
   });
+});
+
+// ---------- CALENDAR ----------
+app.get('/calendar', requireAuth, (req, res) => {
+  const now = new Date();
+  const year = parseInt(req.query.y) || now.getFullYear();
+  const month = parseInt(req.query.m) || now.getMonth() + 1;
+  const events = calendar.getEventsForMonth(year, month);
+  const upcomingTouches = calendar.getUpcomingTouches(5);
+  res.render('calendar', {
+    title: 'Calendar — Ngulube Hub',
+    active: 'calendar',
+    year, month, events, upcomingTouches,
+  });
+});
+
+// ---------- CSV IMPORT ----------
+app.get('/import', requireAuth, (req, res) => {
+  res.render('import', { title: 'Import clients — Ngulube Hub', active: 'dashboard' });
+});
+app.post('/import', requireAuth, (req, res) => {
+  try {
+    const csv = (req.body.csv || '').trim();
+    if (!csv) {
+      return res.status(400).render('import', { title: 'Import clients — Ngulube Hub', active: 'dashboard', error: 'Paste your CSV first.' });
+    }
+    const result = importer.processCSV(csv);
+    res.render('import', { title: 'Import clients — Ngulube Hub', active: 'dashboard', result });
+  } catch (e) {
+    res.status(500).render('import', { title: 'Import clients — Ngulube Hub', active: 'dashboard', error: e.message });
+  }
 });
 
 // ---------- PUBLIC JOIN FORM (no login required) ----------

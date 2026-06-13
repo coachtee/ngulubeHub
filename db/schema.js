@@ -42,6 +42,8 @@ CREATE TABLE IF NOT EXISTS clients (
   intro_status TEXT DEFAULT 'Not contacted',
   source TEXT,                  -- where they came from (group, referral, etc.)
   notes TEXT,
+  last_contact_at TEXT,         -- date of most recent outreach touch
+  cadence_days INTEGER,         -- e.g. 14 = touch every 2 weeks; null = no cadence
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );

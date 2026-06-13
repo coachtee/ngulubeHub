@@ -68,6 +68,111 @@
     </div>
   </div>
 
+  <!-- TODAY widget — the morning dashboard view -->
+  <div class="panel mb-3" style="border-left: 3px solid var(--accent);">
+    <div class="panel-head">
+      <i class="bi bi-sun"></i> Today — <%= new Date(todayData.today).toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long' }) %>
+      <div class="right">
+        <a class="btn ghost sm" href="/calendar">Full calendar →</a>
+      </div>
+    </div>
+    <div class="panel-body" style="padding: 0;">
+      <!-- Quick counts row -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border);">
+        <div style="background: var(--surface); padding: 12px 16px; text-align: center;">
+          <div style="font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">Overdue</div>
+          <div style="font-size: 22px; font-weight: 700; color: <%= todayData.counts.overdueTasks > 0 ? 'var(--red)' : 'var(--text-3)' %>;"><%= todayData.counts.overdueTasks %></div>
+          <div style="font-size: 10px; color: var(--text-3);">tasks</div>
+        </div>
+        <div style="background: var(--surface); padding: 12px 16px; text-align: center;">
+          <div style="font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">Due today</div>
+          <div style="font-size: 22px; font-weight: 700; color: <%= todayData.counts.dueTodayTasks > 0 ? 'var(--yellow)' : 'var(--text-3)' %>;"><%= todayData.counts.dueTodayTasks %></div>
+          <div style="font-size: 10px; color: var(--text-3);">tasks</div>
+        </div>
+        <div style="background: var(--surface); padding: 12px 16px; text-align: center;">
+          <div style="font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">Due this week</div>
+          <div style="font-size: 22px; font-weight: 700; color: <%= todayData.counts.dueWeekTasks > 0 ? 'var(--blue)' : 'var(--text-3)' %>;"><%= todayData.counts.dueWeekTasks %></div>
+          <div style="font-size: 10px; color: var(--text-3);">tasks</div>
+        </div>
+        <div style="background: var(--surface); padding: 12px 16px; text-align: center;">
+          <div style="font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">Touches due</div>
+          <div style="font-size: 22px; font-weight: 700; color: <%= todayData.counts.overdueTouches > 0 ? 'var(--red)' : todayData.counts.todayTouches > 0 ? 'var(--yellow)' : 'var(--text-3)' %>;"><%= todayData.counts.overdueTouches + todayData.counts.todayTouches %></div>
+          <div style="font-size: 10px; color: var(--text-3);">overdue + today</div>
+        </div>
+      </div>
+
+      <!-- List section: overdue + today + touches, side by side -->
+      <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1px; background: var(--border);">
+        <!-- Left: task list -->
+        <div style="background: var(--surface);">
+          <% const allTasks = [...todayData.overdueTasks, ...todayData.dueToday, ...todayData.dueThisWeek]; %>
+          <% if (allTasks.length === 0) { %>
+            <div class="empty" style="padding: 24px 18px;">
+              <i class="bi bi-check2-all"></i>
+              <div class="t">Nothing due</div>
+              <div class="s">No tasks overdue or due this week. 🎉</div>
+            </div>
+          <% } else { %>
+            <% allTasks.slice(0, 5).forEach(t => {
+                 const overdue = t.due_date < todayData.today;
+                 const today = t.due_date === todayData.today;
+            %>
+              <a href="/projects/<%= t.project_id %>" class="my-task-row">
+                <div class="mt-status">
+                  <i class="bi bi-circle-fill" style="color: <%= overdue ? 'var(--red)' : today ? 'var(--yellow)' : 'var(--blue)' %>; font-size: 10px;"></i>
+                </div>
+                <div class="mt-body">
+                  <div class="mt-title"><%= t.title %></div>
+                  <div class="mt-meta">
+                    <span><i class="bi bi-kanban"></i> <%= t.project_name %></span>
+                    <% if (t.client_name) { %><span><i class="bi bi-person"></i> <%= t.client_name %></span><% } %>
+                    <span><i class="bi bi-calendar"></i> <%= t.due_date %></span>
+                  </div>
+                </div>
+                <% if (t.priority === 'urgent') { %>
+                  <span class="pill red" style="font-size: 10px; padding: 1px 6px;"><span class="dot"></span>urgent</span>
+                <% } else if (t.priority === 'high') { %>
+                  <span class="pill orange" style="font-size: 10px; padding: 1px 6px;"><span class="dot"></span>high</span>
+                <% } %>
+              </a>
+            <% }) %>
+          <% } %>
+        </div>
+        <!-- Right: touches -->
+        <div style="background: var(--surface);">
+          <% if (todayData.upcomingTouches.length === 0) { %>
+            <div class="empty" style="padding: 24px 18px;">
+              <i class="bi bi-inbox"></i>
+              <div class="t">No touches set</div>
+              <div class="s">Set cadences on clients to populate this list.</div>
+            </div>
+          <% } else { %>
+            <% todayData.upcomingTouches.forEach(t => { %>
+              <a href="/clients/<%= t.client_id %>" class="my-task-row">
+                <div class="mt-status">
+                  <i class="bi bi-circle-fill" style="color: <%= t.is_overdue ? 'var(--red)' : t.days_until === 0 ? 'var(--yellow)' : 'var(--blue)' %>; font-size: 10px;"></i>
+                </div>
+                <div class="mt-body">
+                  <div class="mt-title"><%= t.client_name %></div>
+                  <div class="mt-meta">
+                    <span><i class="bi bi-calendar"></i> <%= t.next_date %></span>
+                    <% if (t.is_overdue) { %>
+                      <span style="color: var(--red); font-weight: 500;"><%= Math.abs(t.days_until) %>d overdue</span>
+                    <% } else if (t.days_until === 0) { %>
+                      <span style="color: var(--yellow); font-weight: 500;">Today</span>
+                    <% } else { %>
+                      <span>in <%= t.days_until %>d</span>
+                    <% } %>
+                  </div>
+                </div>
+              </a>
+            <% }) %>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Idea inbox + my upcoming tasks + active projects (three-up grid) -->
   <div class="dashboard-pm-grid">
     <!-- Idea inbox -->
