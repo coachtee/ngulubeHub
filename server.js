@@ -20,6 +20,18 @@ const importer = require('./db/import');
   if (!cols.includes('cadence_days')) {
     try { db.exec("ALTER TABLE clients ADD COLUMN cadence_days INTEGER"); } catch (_) {}
   }
+  if (!cols.includes('next_step')) {
+    try { db.exec("ALTER TABLE clients ADD COLUMN next_step TEXT"); } catch (_) {}
+  }
+  if (!cols.includes('next_followup_at')) {
+    try { db.exec("ALTER TABLE clients ADD COLUMN next_followup_at TEXT"); } catch (_) {}
+  }
+  if (!cols.includes('won_value_zar')) {
+    try { db.exec("ALTER TABLE clients ADD COLUMN won_value_zar INTEGER"); } catch (_) {}
+  }
+  if (!cols.includes('lost_reason')) {
+    try { db.exec("ALTER TABLE clients ADD COLUMN lost_reason TEXT"); } catch (_) {}
+  }
 })();
 
 const app = express();
@@ -332,15 +344,36 @@ app.get('/board', requireAuth, (req, res) => {
     ai_solutions: safeJson(c.ai_solutions, []),
     tags: safeJson(c.tags, []),
   }));
-  // Bucket by status
+  // Bucket by status (display labels)
+  const STATUSES = ['Not contacted', 'Pending review', 'Intro sent', 'Engaged', 'Won', 'Lost'];
   const buckets = {
-    not_contacted: rows.filter(c => !c.intro_status || c.intro_status === 'Not contacted' || c.intro_status === 'not_contacted'),
-    pending: rows.filter(c => c.intro_status === 'Pending review' || c.intro_status === 'pending'),
-    intro_sent: rows.filter(c => c.intro_status === 'Intro sent' || c.intro_status === 'intro_sent'),
-    engaged: rows.filter(c => c.intro_status === 'Engaged' || c.intro_status === 'engaged'),
-    won: rows.filter(c => c.intro_status === 'Won' || c.intro_status === 'won'),
+    'Not contacted': rows.filter(c => !c.intro_status || c.intro_status === 'Not contacted' || c.intro_status === 'not_contacted'),
+    'Pending review': rows.filter(c => c.intro_status === 'Pending review' || c.intro_status === 'pending'),
+    'Intro sent': rows.filter(c => c.intro_status === 'Intro sent' || c.intro_status === 'intro_sent'),
+    'Engaged': rows.filter(c => c.intro_status === 'Engaged' || c.intro_status === 'engaged'),
+    'Won': rows.filter(c => c.intro_status === 'Won' || c.intro_status === 'won'),
+    'Lost': rows.filter(c => c.intro_status === 'Lost' || c.intro_status === 'lost'),
   };
-  res.render('board', { buckets, q, active: 'board', title: 'Board — NgulubeHub' });
+  res.render('board', { buckets, statuses: STATUSES, q, active: 'board', title: 'Board — NgulubeHub' });
+});
+
+// Drag-and-drop: update client status from board
+app.post('/clients/:id/status', requireAuth, (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const newStatus = (req.body.status || '').trim();
+  const ALLOWED = ['Not contacted', 'Pending review', 'Intro sent', 'Engaged', 'Won', 'Lost'];
+  if (!ALLOWED.includes(newStatus)) return res.status(400).json({ error: 'Invalid status' });
+  const before = db.prepare('SELECT intro_status FROM clients WHERE id = ?').get(id);
+  if (!before) return res.status(404).json({ error: 'Not found' });
+  if (before.intro_status === newStatus) return res.json({ ok: true, noop: true });
+  db.prepare("UPDATE clients SET intro_status = ?, last_contact_at = CASE WHEN ? IN ('Engaged', 'Won', 'Intro sent') THEN DATE('now') ELSE last_contact_at END, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(newStatus, newStatus, id);
+  // Log to interactions timeline
+  db.prepare('INSERT INTO interactions (client_id, type, summary) VALUES (?, ?, ?)').run(
+    id, 'status', `Status changed: ${before.intro_status || 'Not contacted'} → ${newStatus}`
+  );
+  // Flash a friendly message for the user
+  flash(req, 'success', `Moved to ${newStatus}.`);
+  res.json({ ok: true, status: newStatus });
 });
 
 app.get('/clients/new', requireAuth, (req, res) => {
@@ -352,7 +385,30 @@ app.get('/clients/:id', requireAuth, (req, res) => {
   const c = loadClient(req.params.id);
   if (!c) return res.status(404).send('Client not found');
   const interactions = db.prepare('SELECT * FROM interactions WHERE client_id = ? ORDER BY created_at DESC').all(req.params.id);
-  res.render('profile', { client: c, interactions, active: 'dashboard' });
+  const atts = attachments.listForClient(c.id);
+  res.render('profile', { client: c, interactions, attachments: atts, active: 'dashboard' });
+});
+
+// Global Cmd+K search across clients, projects, tasks
+app.get('/api/search', requireAuth, (req, res) => {
+  const q = (req.query.q || '').trim();
+  if (!q || q.length < 1) return res.json({ clients: [], projects: [], tasks: [] });
+  const like = `%${q}%`;
+  const clients = db.prepare(`
+    SELECT id, name, company, sector, intro_status FROM clients
+    WHERE name LIKE ? OR company LIKE ? OR bio LIKE ? OR sector LIKE ? OR industry LIKE ? OR tags LIKE ?
+    ORDER BY name LIMIT 8
+  `).all(like, like, like, like, like, like);
+  const projects = db.prepare(`
+    SELECT id, name, status FROM projects
+    WHERE name LIKE ? OR description LIKE ? ORDER BY name LIMIT 5
+  `).all(like, like);
+  const tasks = db.prepare(`
+    SELECT t.id, t.title, t.priority, t.due_date, t.status, p.name AS project_name
+    FROM tasks t LEFT JOIN projects p ON p.id = t.project_id
+    WHERE t.title LIKE ? ORDER BY t.due_date ASC LIMIT 5
+  `).all(like);
+  res.json({ clients, projects, tasks });
 });
 
 app.post('/clients', requireAuth, (req, res) => {
@@ -401,6 +457,7 @@ app.post('/clients/:id', requireAuth, (req, res) => {
         name=?, title=?, company=?, website=?, sector=?, industry=?, sub_industry=?, bio=?,
         focus_areas=?, pain_points=?, ai_solutions=?, tags=?, contact_email=?, contact_phone=?,
         intro_status=?, source=?, notes=?, region=?, last_contact_at=?, cadence_days=?,
+        next_step=?, next_followup_at=?, won_value_zar=?, lost_reason=?,
         updated_at=CURRENT_TIMESTAMP
       WHERE id=?
     `);
@@ -421,6 +478,10 @@ app.post('/clients/:id', requireAuth, (req, res) => {
       fmt(b.region) || 'South Africa',
       b.last_contact_at || null,
       b.cadence_days ? parseInt(b.cadence_days) : null,
+      fmt(b.next_step) || null,
+      b.next_followup_at || null,
+      b.won_value_zar ? parseInt(b.won_value_zar) : null,
+      fmt(b.lost_reason) || null,
       req.params.id,
     );
     res.redirect(`/clients/${req.params.id}`);
@@ -433,6 +494,131 @@ app.post('/clients/:id/delete', requireAuth, (req, res) => {
   db.prepare('DELETE FROM clients WHERE id = ?').run(req.params.id);
   flash(req, 'success', 'Client removed.');
   res.redirect('/');
+});
+
+// ---------- FILE ATTACHMENTS ----------
+// Tiny multipart parser (no external dep). Handles single file per request,
+// with form fields available as req.body. Limited to 10 MB uploads.
+const fs = require('fs');
+const attachments = require('./db/attachments');
+
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
+
+function parseMultipart(req) {
+  return new Promise((resolve, reject) => {
+    const ctype = req.headers['content-type'] || '';
+    const m = ctype.match(/^multipart\/form-data;\s*boundary=(.+)$/);
+    if (!m) return reject(new Error('Not multipart'));
+    const boundary = '--' + m[1];
+    const chunks = [];
+    let total = 0;
+    req.on('data', c => {
+      total += c.length;
+      if (total > MAX_UPLOAD_BYTES + 1024) {
+        req.destroy();
+        return reject(new Error('Upload too large'));
+      }
+      chunks.push(c);
+    });
+    req.on('end', () => {
+      try {
+        const buf = Buffer.concat(chunks);
+        const fields = {};
+        const files = [];
+        let pos = 0;
+        while (pos < buf.length) {
+          const start = buf.indexOf(boundary, pos);
+          if (start === -1) break;
+          pos = start + boundary.length;
+          // Expect \r\n after boundary
+          if (buf.slice(pos, pos + 2).toString() === '--') break; // end
+          if (buf.slice(pos, pos + 2).toString() === '\r\n') pos += 2;
+          // Find the part headers end (\r\n\r\n)
+          const headerEnd = buf.indexOf('\r\n\r\n', pos);
+          if (headerEnd === -1) break;
+          const headerText = buf.slice(pos, headerEnd).toString();
+          pos = headerEnd + 4;
+          // Find the closing boundary for this part
+          const partEnd = buf.indexOf('\r\n' + boundary, pos);
+          if (partEnd === -1) break;
+          const partBody = buf.slice(pos, partEnd);
+          pos = partEnd + 2;
+          // Parse Content-Disposition
+          const cd = headerText.match(/Content-Disposition:[^\n]*form-data;\s*name="([^"]+)"(?:;\s*filename="([^"]*)")?/i);
+          if (!cd) continue;
+          const name = cd[1];
+          const filename = cd[2];
+          if (filename) {
+            // File part
+            const ft = headerText.match(/Content-Type:\s*([^\r\n]+)/i);
+            files.push({
+              fieldName: name,
+              originalName: filename,
+              mimeType: ft ? ft[1].trim() : 'application/octet-stream',
+              buffer: partBody,
+            });
+          } else {
+            // Field part
+            fields[name] = partBody.toString('utf8');
+          }
+        }
+        resolve({ fields, files });
+      } catch (e) { reject(e); }
+    });
+    req.on('error', reject);
+  });
+}
+
+app.post('/clients/:id/attachments', requireAuth, async (req, res) => {
+  const clientId = parseInt(req.params.id, 10);
+  const c = loadClient(clientId);
+  if (!c) return res.status(404).send('Client not found');
+  try {
+    const { files } = await parseMultipart(req);
+    if (!files.length) {
+      flash(req, 'error', 'No file uploaded.');
+      return res.redirect(`/clients/${clientId}`);
+    }
+    for (const f of files) {
+      if (f.buffer.length > MAX_UPLOAD_BYTES) {
+        flash(req, 'error', `File "${f.originalName}" exceeds 10 MB.`);
+        continue;
+      }
+      const storedPath = attachments.saveBuffer(clientId, f.originalName, f.buffer);
+      attachments.add(clientId, {
+        originalName: f.originalName,
+        mimeType: f.mimeType,
+        size: f.buffer.length,
+        storedPath,
+      });
+    }
+    flash(req, 'success', `Uploaded ${files.length} file${files.length === 1 ? '' : 's'}.`);
+    res.redirect(`/clients/${clientId}`);
+  } catch (e) {
+    flash(req, 'error', 'Upload failed: ' + e.message);
+    res.redirect(`/clients/${clientId}`);
+  }
+});
+
+app.get('/attachments/:id/download', requireAuth, (req, res) => {
+  const att = attachments.getById(req.params.id);
+  if (!att) return res.status(404).send('Attachment not found');
+  if (!fs.existsSync(att.storage_path)) return res.status(404).send('File missing on disk');
+  res.setHeader('Content-Type', att.mime_type || 'application/octet-stream');
+  // RFC 5987 for non-ASCII filenames
+  const asciiName = att.original_name.replace(/[^\x20-\x7E]/g, '_').replace(/"/g, '');
+  const utf8Name = encodeURIComponent(att.original_name);
+  res.setHeader('Content-Disposition', `attachment; filename="${asciiName}"; filename*=UTF-8''${utf8Name}`);
+  res.sendFile(path.resolve(att.storage_path));
+});
+
+app.post('/attachments/:id/delete', requireAuth, (req, res) => {
+  const att = attachments.getById(req.params.id);
+  if (!att) { flash(req, 'error', 'Attachment not found.'); return res.redirect('/'); }
+  const clientId = att.client_id;
+  attachments.remove(att.id);
+  flash(req, 'success', 'Attachment removed.');
+  res.redirect(`/clients/${clientId}`);
 });
 
 app.post('/clients/:id/interactions', requireAuth, (req, res) => {

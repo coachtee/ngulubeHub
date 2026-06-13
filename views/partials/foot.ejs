@@ -1,2 +1,214 @@
 </body>
+
+<!-- Cmd+K global search palette -->
+<div id="cmdkPalette" class="cmdk" aria-hidden="true">
+  <div class="cmdk-backdrop" onclick="closeCmdK()"></div>
+  <div class="cmdk-panel" role="dialog" aria-modal="true" aria-label="Search">
+    <div class="cmdk-input-row">
+      <i class="bi bi-search"></i>
+      <input id="cmdkInput" type="text" placeholder="Search clients, projects, tasks…" autocomplete="off" spellcheck="false" />
+      <kbd>esc</kbd>
+    </div>
+    <div class="cmdk-results" id="cmdkResults">
+      <div class="cmdk-empty">Start typing to search across your CRM.</div>
+    </div>
+    <div class="cmdk-foot">
+      <span><kbd>↑↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> open</span>
+      <span><kbd>esc</kbd> close</span>
+      <span class="cmdk-foot-right"><kbd>n</kbd> new client</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// Cmd+K global search palette
+(function() {
+  const palette = document.getElementById('cmdkPalette');
+  const input = document.getElementById('cmdkInput');
+  const results = document.getElementById('cmdkResults');
+  let activeIdx = 0;
+  let currentItems = [];
+  let lastQuery = '';
+  let debounceT = null;
+
+  window.openCmdK = function() {
+    palette.classList.add('open');
+    palette.setAttribute('aria-hidden', 'false');
+    input.focus();
+    input.select();
+  };
+  window.closeCmdK = function() {
+    palette.classList.remove('open');
+    palette.setAttribute('aria-hidden', 'true');
+    input.value = '';
+    results.innerHTML = '<div class="cmdk-empty">Start typing to search across your CRM.</div>';
+  };
+
+  function runSearch(q) {
+    if (q === lastQuery) return;
+    lastQuery = q;
+    if (!q || q.length < 1) {
+      results.innerHTML = '<div class="cmdk-empty">Start typing to search across your CRM.</div>';
+      currentItems = [];
+      return;
+    }
+    fetch('/api/search?q=' + encodeURIComponent(q))
+      .then(r => r.json())
+      .then(data => {
+        renderResults(data, q);
+      })
+      .catch(err => {
+        results.innerHTML = '<div class="cmdk-empty">Search failed.</div>';
+      });
+  }
+  function renderResults(data, q) {
+    const items = [];
+    if (data.clients && data.clients.length) {
+      items.push({ type: 'section', label: 'Clients' });
+      data.clients.forEach(c => {
+        const status = c.intro_status || 'Not contacted';
+        const slug = String(status).toLowerCase().replace(/[^a-z]/g, '_');
+        items.push({
+          type: 'item',
+          href: '/clients/' + c.id,
+          html: '<div class="cmdk-row">'
+            + '<div class="cmdk-avatar">' + ((c.name||'').split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase() || '?') + '</div>'
+            + '<div class="cmdk-row-body">'
+            + '<div class="cmdk-row-title">' + highlight(c.name || '', q) + '</div>'
+            + '<div class="cmdk-row-sub">' + [highlight(c.company || '', q), c.sector].filter(Boolean).join(' · ') + '</div>'
+            + '</div>'
+            + '<div class="cmdk-row-right"><span class="cmdk-status-dot ' + slug + '"></span> ' + status + '</div>'
+            + '</div>'
+        });
+      });
+    }
+    if (data.projects && data.projects.length) {
+      items.push({ type: 'section', label: 'Projects' });
+      data.projects.forEach(p => {
+        items.push({
+          type: 'item',
+          href: '/projects/' + p.id,
+          html: '<div class="cmdk-row">'
+            + '<div class="cmdk-avatar cmdk-avatar-proj"><i class="bi bi-kanban"></i></div>'
+            + '<div class="cmdk-row-body">'
+            + '<div class="cmdk-row-title">' + highlight(p.name || '', q) + '</div>'
+            + '<div class="cmdk-row-sub">' + (p.status || 'concept') + '</div>'
+            + '</div>'
+            + '</div>'
+        });
+      });
+    }
+    if (data.tasks && data.tasks.length) {
+      items.push({ type: 'section', label: 'Tasks' });
+      data.tasks.forEach(t => {
+        items.push({
+          type: 'item',
+          href: '/projects/' + t.id,
+          html: '<div class="cmdk-row">'
+            + '<div class="cmdk-avatar cmdk-avatar-task"><i class="bi bi-check2-square"></i></div>'
+            + '<div class="cmdk-row-body">'
+            + '<div class="cmdk-row-title">' + highlight(t.title || '', q) + '</div>'
+            + '<div class="cmdk-row-sub">' + (t.project_name ? t.project_name + ' · ' : '') + (t.due_date || 'no due') + '</div>'
+            + '</div>'
+            + '<div class="cmdk-row-right"><span class="pill sm ' + (t.priority === 'urgent' ? 'red' : t.priority === 'high' ? 'orange' : 'blue') + '">' + (t.priority || 'normal') + '</span></div>'
+            + '</div>'
+        });
+      });
+    }
+    if (!items.length) {
+      results.innerHTML = '<div class="cmdk-empty">No results for "' + escapeHtml(q) + '".</div>';
+      currentItems = [];
+      return;
+    }
+    currentItems = items.filter(i => i.type === 'item');
+    let html = '';
+    items.forEach((it, idx) => {
+      if (it.type === 'section') {
+        html += '<div class="cmdk-section">' + it.label + '</div>';
+      } else {
+        const i = currentItems.indexOf(it);
+        html += '<a class="cmdk-item' + (i === 0 ? ' active' : '') + '" href="' + it.href + '" data-idx="' + i + '">' + it.html + '</a>';
+      }
+    });
+    // Add a "Add new client" suggestion when query is text
+    if (q.length >= 2) {
+      html += '<a class="cmdk-item cmdk-create" href="/clients/new" data-idx="' + currentItems.length + '">'
+        + '<div class="cmdk-row">'
+        + '<div class="cmdk-avatar cmdk-avatar-create"><i class="bi bi-plus-lg"></i></div>'
+        + '<div class="cmdk-row-body">'
+        + '<div class="cmdk-row-title">Add new client named "' + escapeHtml(q) + '"</div>'
+        + '<div class="cmdk-row-sub">Create a new client</div>'
+        + '</div>'
+        + '</div>'
+        + '</a>';
+      currentItems.push({ href: '/clients/new' });
+    }
+    results.innerHTML = html;
+    activeIdx = 0;
+  }
+  function highlight(text, q) {
+    if (!q) return escapeHtml(text);
+    const safe = escapeHtml(text);
+    const re = new RegExp('(' + q.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + ')', 'ig');
+    return safe.replace(re, '<mark>$1</mark>');
+  }
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+  function moveActive(delta) {
+    const items = results.querySelectorAll('.cmdk-item');
+    if (!items.length) return;
+    activeIdx = (activeIdx + delta + items.length) % items.length;
+    items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+    items[activeIdx].scrollIntoView({ block: 'nearest' });
+  }
+  function openActive() {
+    const items = results.querySelectorAll('.cmdk-item');
+    if (items[activeIdx]) {
+      window.location.href = items[activeIdx].getAttribute('href');
+    }
+  }
+  // Open on Cmd+K / Ctrl+K
+  document.addEventListener('keydown', function(e) {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      if (palette.classList.contains('open')) closeCmdK();
+      else openCmdK();
+    } else if (e.key === 'Escape' && palette.classList.contains('open')) {
+      closeCmdK();
+    } else if (e.key === 'Enter' && palette.classList.contains('open')) {
+      e.preventDefault();
+      openActive();
+    } else if (e.key === 'ArrowDown' && palette.classList.contains('open')) {
+      e.preventDefault();
+      moveActive(1);
+    } else if (e.key === 'ArrowUp' && palette.classList.contains('open')) {
+      e.preventDefault();
+      moveActive(-1);
+    } else if (e.key === 'n' && palette.classList.contains('open') && !e.metaKey && !e.ctrlKey) {
+      // Press 'n' to create a new client (when not in input)
+      if (document.activeElement !== input) {
+        window.location.href = '/clients/new';
+      }
+    }
+  });
+  // Open from search button in topbar
+  document.addEventListener('click', function(e) {
+    const trigger = e.target.closest && e.target.closest('[data-cmdk-open]');
+    if (trigger) {
+      e.preventDefault();
+      openCmdK();
+    }
+  });
+  // Debounced input
+  if (input) {
+    input.addEventListener('input', function() {
+      clearTimeout(debounceT);
+      const v = input.value;
+      debounceT = setTimeout(() => runSearch(v), 80);
+    });
+  }
+})();
+</script>
 </html>

@@ -110,6 +110,33 @@
 
     <!-- RIGHT COLUMN -->
     <div>
+      <% if (client.next_step || client.next_followup_at || client.won_value_zar || client.lost_reason) { %>
+      <div class="panel" style="border-left: 3px solid var(--accent);">
+        <div class="panel-head"><i class="bi bi-arrow-right-circle"></i> Next step</div>
+        <div class="panel-body">
+          <% if (client.next_step) { %>
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;"><%= client.next_step %></div>
+          <% } else { %>
+            <div class="text-muted" style="font-size: 13px;">No next step set — <a href="/clients/<%= client.id %>/edit">add one</a>.</div>
+          <% } %>
+          <% if (client.next_followup_at) { %>
+            <div style="margin-top: 8px; font-size: 12.5px; color: var(--text-2);">
+              <i class="bi bi-calendar-event"></i> Follow up by <strong><%= client.next_followup_at %></strong>
+            </div>
+          <% } %>
+          <% if (client.won_value_zar) { %>
+            <div style="margin-top: 8px;">
+              <span class="pill green"><span class="dot"></span> Won · R <%= Number(client.won_value_zar).toLocaleString() %></span>
+            </div>
+          <% } %>
+          <% if (client.lost_reason) { %>
+            <div style="margin-top: 8px;">
+              <span class="pill red"><span class="dot"></span> Lost: <%= client.lost_reason %></span>
+            </div>
+          <% } %>
+        </div>
+      </div>
+      <% } %>
       <div class="panel">
         <div class="panel-head">
           <i class="bi bi-stars" style="color: var(--brand);"></i> AI Solutions We Can Offer
@@ -137,6 +164,40 @@
           <% if (client.contact_email) { %><p class="mb-1" style="font-size: 13px;"><i class="bi bi-envelope"></i> <a href="mailto:<%= client.contact_email %>"><%= client.contact_email %></a></p><% } %>
           <% if (client.contact_phone) { %><p class="mb-1" style="font-size: 13px;"><i class="bi bi-phone"></i> <%= client.contact_phone %></p><% } %>
           <% if (!client.contact_email && !client.contact_phone) { %><p class="text-muted mb-0" style="font-size: 13px;">No contact info yet — add via edit.</p><% } %>
+        </div>
+      </div>
+
+      <div class="panel" id="attachments">
+        <div class="panel-head">
+          <i class="bi bi-paperclip"></i> Attachments
+          <span class="badge-mini count" style="margin-left: auto;"><%= (attachments || []).length %></span>
+        </div>
+        <div class="panel-body">
+          <form method="post" action="/clients/<%= client.id %>/attachments" enctype="multipart/form-data" class="mb-2">
+            <label class="btn ghost sm" style="width: 100%; cursor: pointer; justify-content: center;">
+              <i class="bi bi-upload"></i> Upload file
+              <input type="file" name="file" style="display: none;" onchange="this.form.submit()">
+            </label>
+          </form>
+          <% if (!(attachments || []).length) { %>
+            <p class="text-muted mb-0" style="font-size: 12px;">PDFs, images, proposals. Max 10 MB.</p>
+          <% } %>
+          <% (attachments || []).forEach(a => { %>
+            <div class="att-item">
+              <a href="/attachments/<%= a.id %>/download" title="<%= a.original_name %>">
+                <i class="bi <%= a.mime_type && a.mime_type.indexOf('image') === 0 ? 'bi-image' : a.mime_type && a.mime_type.indexOf('pdf') !== -1 ? 'bi-file-pdf' : 'bi-file-earmark' %>"></i>
+                <span class="att-name"><%= a.original_name %></span>
+              </a>
+              <span class="att-meta">
+                <%= (a.size_bytes / 1024).toFixed(0) %> KB
+                <form method="post" action="/attachments/<%= a.id %>/delete" style="display: inline;" onsubmit="return confirm('Delete this attachment?')">
+                  <button class="btn ghost sm" style="padding: 2px 6px; font-size: 11px; color: var(--red);" type="submit" title="Delete">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </form>
+              </span>
+            </div>
+          <% }) %>
         </div>
       </div>
 

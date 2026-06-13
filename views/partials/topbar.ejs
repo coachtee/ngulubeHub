@@ -3,10 +3,11 @@
   <div class="greeting">Hi, <%= (typeof user !== 'undefined' && user && user.username ? user.username : 'there') %> <span class="wave">👋</span></div>
 
   <% if (typeof user !== 'undefined' && user && user.username) { %>
-    <form class="search" method="GET" action="/dashboard">
+    <button type="button" class="cmk-trigger" data-cmdk-open aria-label="Search">
       <i class="bi bi-search"></i>
-      <input type="text" name="q" placeholder="Search clients by name, sector, or industry..." value="<%= typeof q !== 'undefined' ? q : '' %>" autocomplete="off">
-    </form>
+      <span class="hidden-mobile">Search</span>
+      <kbd>Ctrl K</kbd>
+    </button>
     <a href="/clients/new" class="btn primary"><i class="bi bi-plus-lg"></i> <span class="hidden-mobile">Add</span> <span class="hidden-mobile">Client</span><span class="visible-mobile">+</span></a>
     <a class="btn ghost" href="/import" title="Bulk import clients"><i class="bi bi-upload"></i></a>
     <a href="/join" class="btn ghost" title="Public join form" target="_blank" rel="noopener"><i class="bi bi-link-45deg"></i></a>

@@ -66,10 +66,23 @@ CREATE TABLE IF NOT EXISTS ai_solutions_catalog (
   est_value TEXT                -- indicative ZAR pricing string
 );
 
+CREATE TABLE IF NOT EXISTS attachments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  client_id INTEGER NOT NULL,
+  filename TEXT NOT NULL,         -- sanitized stored name
+  original_name TEXT NOT NULL,    -- user-supplied filename
+  mime_type TEXT,
+  size_bytes INTEGER,
+  storage_path TEXT NOT NULL,     -- absolute path on disk
+  uploaded_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
+);
+
 CREATE INDEX IF NOT EXISTS idx_clients_sector ON clients(sector);
 CREATE INDEX IF NOT EXISTS idx_clients_status ON clients(intro_status);
 CREATE INDEX IF NOT EXISTS idx_interactions_client ON interactions(client_id);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+CREATE INDEX IF NOT EXISTS idx_attachments_client ON attachments(client_id);
 `);
 
 module.exports = db;

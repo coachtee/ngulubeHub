@@ -26,6 +26,9 @@
         <i class="bi bi-whatsapp"></i> Share via WhatsApp
       </a>
     <% } %>
+    <a class="btn" style="background: #2563eb; color: #fff; border-color: #2563eb;" href="#" onclick="shareViaEmail('<%= client.contact_email || '' %>', '<%= client.name %>'); return false;">
+      <i class="bi bi-envelope"></i> Share via Email
+    </a>
     <button class="btn" onclick="copyIntroToClipboard()" title="Copy intro text to clipboard"><i class="bi bi-clipboard"></i> Copy Text</button>
     <button class="btn primary" onclick="window.print()"><i class="bi bi-printer"></i> Print / Save as PDF</button>
     <form method="post" action="/clients/<%= client.id %>/mark-intro-sent" style="display: inline-block;">
@@ -43,6 +46,15 @@ function shareOnWhatsApp(phone, name) {
   const introText = document.getElementById('intro-text').value;
   const url = 'https://wa.me/' + digits + '?text=' + encodeURIComponent(introText);
   window.open(url, '_blank');
+}
+function shareViaEmail(email, name) {
+  const introText = document.getElementById('intro-text').value;
+  const subject = 'Intro for ' + name;
+  // First line of the intro for body preview
+  const url = 'mailto:' + (email || '') +
+    '?subject=' + encodeURIComponent(subject) +
+    '&body=' + encodeURIComponent(introText);
+  window.location.href = url;
 }
 function copyIntroToClipboard() {
   const text = document.getElementById('intro-text').value;

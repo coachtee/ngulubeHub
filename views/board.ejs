@@ -6,6 +6,12 @@
 <%- include('partials/topbar') %>
 <div class="content">
 
+  <% if (typeof flash !== 'undefined' && flash) { %>
+    <div class="alert <%= flash.type === 'error' ? 'alert-danger' : 'alert-success' %>" style="border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px;">
+      <i class="bi bi-<%= flash.type === 'error' ? 'exclamation-triangle' : 'check-circle' %>"></i> <%= flash.message %>
+    </div>
+  <% } %>
+
   <div class="cu-page-head">
     <i class="bi bi-house-door"></i><span>Home</span>
     <i class="bi bi-chevron-right" style="font-size: 9px;"></i>
@@ -14,7 +20,7 @@
   <header class="d-flex flex-wrap justify-between items-center mb-3" style="gap: 12px;">
     <div>
       <h1 class="cu-page-title"><i class="bi bi-kanban"></i> Client Board</h1>
-      <p class="cu-page-sub">All <strong><%= Object.values(buckets).reduce((a,b)=>a+b.length,0) %></strong> clients grouped by pipeline status.</p>
+      <p class="cu-page-sub"><strong>Drag a card</strong> to move it to a different status. All <strong><%= Object.values(buckets).reduce((a,b)=>a+b.length,0) %></strong> clients.</p>
     </div>
     <div class="cu-page-actions">
       <a class="btn" href="/"><i class="bi bi-list-ul"></i> List view</a>
@@ -37,116 +43,125 @@
     <a href="/calendar"><i class="bi bi-calendar3"></i> Calendar</a>
   </div>
 
-  <div class="board-wrap">
-    <div class="board-col" data-status="not_contacted">
-      <div class="board-col-head">
-        <span class="cu-status-dot not_contacted"></span>
-        <strong>Not contacted</strong>
-        <span class="cu-nav-count"><%= buckets.not_contacted.length %></span>
-      </div>
-      <div class="board-col-body">
-        <% buckets.not_contacted.forEach(c => { %>
-          <a class="board-card" href="/clients/<%= c.id %>">
-            <div class="board-card-title"><%= c.name %></div>
-            <% if (c.company) { %><div class="board-card-sub"><%= c.company %></div><% } %>
-            <div class="board-card-meta">
-              <% if (c.sector) { %><span class="tag"><%= c.sector %></span><% } %>
+  <div class="board-wrap" id="boardWrap">
+    <% statuses.forEach((status, idx) => { %>
+      <%
+        const slug = status.toLowerCase().replace(/[^a-z]/g, '_');
+        const statusKey = status;
+        const items = buckets[statusKey] || [];
+      %>
+      <div class="board-col" data-status="<%= status %>">
+        <div class="board-col-head">
+          <span class="cu-status-dot <%= slug %>"></span>
+          <strong><%= status %></strong>
+          <span class="cu-nav-count"><%= items.length %></span>
+        </div>
+        <div class="board-col-body" data-status="<%= status %>" ondragover="onBoardDragOver(event)" ondrop="onBoardDrop(event)">
+          <% items.forEach(c => { %>
+            <div class="board-card" draggable="true" data-id="<%= c.id %>" ondragstart="onBoardDragStart(event)">
+              <div class="board-card-title"><%= c.name %></div>
+              <% if (c.company) { %><div class="board-card-sub"><%= c.company %></div><% } %>
+              <div class="board-card-meta">
+                <% if (c.sector) { %><span class="tag"><%= c.sector %></span><% } %>
+                <% if (c.intro_status === 'Won' && c.won_value_zar) { %>
+                  <span class="tag" style="background: #dcfce7; color: #15803d;">R <%= Number(c.won_value_zar).toLocaleString() %></span>
+                <% } %>
+                <% if (c.next_followup_at) { %>
+                  <span class="tag" style="background: #dbeafe; color: var(--blue);">↻ <%= c.next_followup_at %></span>
+                <% } %>
+              </div>
+              <div class="board-card-actions">
+                <a href="/clients/<%= c.id %>" onclick="event.stopPropagation();" title="View"><i class="bi bi-eye"></i></a>
+                <a href="/clients/<%= c.id %>/intro" onclick="event.stopPropagation();" title="Intro"><i class="bi bi-file-text"></i></a>
+                <a href="/clients/<%= c.id %>/edit" onclick="event.stopPropagation();" title="Edit"><i class="bi bi-pencil"></i></a>
+              </div>
             </div>
-          </a>
-        <% }) %>
+          <% }) %>
+          <% if (!items.length) { %>
+            <div class="board-empty">Drop here</div>
+          <% } %>
+        </div>
       </div>
-    </div>
-
-    <div class="board-col" data-status="pending">
-      <div class="board-col-head">
-        <span class="cu-status-dot pending"></span>
-        <strong>Pending review</strong>
-        <span class="cu-nav-count"><%= buckets.pending.length %></span>
-      </div>
-      <div class="board-col-body">
-        <% buckets.pending.forEach(c => { %>
-          <a class="board-card" href="/clients/<%= c.id %>">
-            <div class="board-card-title"><%= c.name %></div>
-            <% if (c.company) { %><div class="board-card-sub"><%= c.company %></div><% } %>
-            <div class="board-card-meta">
-              <% if (c.sector) { %><span class="tag"><%= c.sector %></span><% } %>
-            </div>
-          </a>
-        <% }) %>
-        <% if (!buckets.pending.length) { %>
-          <div class="board-empty">No pending</div>
-        <% } %>
-      </div>
-    </div>
-
-    <div class="board-col" data-status="intro_sent">
-      <div class="board-col-head">
-        <span class="cu-status-dot intro_sent"></span>
-        <strong>Intro sent</strong>
-        <span class="cu-nav-count"><%= buckets.intro_sent.length %></span>
-      </div>
-      <div class="board-col-body">
-        <% buckets.intro_sent.forEach(c => { %>
-          <a class="board-card" href="/clients/<%= c.id %>">
-            <div class="board-card-title"><%= c.name %></div>
-            <% if (c.company) { %><div class="board-card-sub"><%= c.company %></div><% } %>
-            <div class="board-card-meta">
-              <% if (c.sector) { %><span class="tag"><%= c.sector %></span><% } %>
-            </div>
-          </a>
-        <% }) %>
-        <% if (!buckets.intro_sent.length) { %>
-          <div class="board-empty">No intros sent</div>
-        <% } %>
-      </div>
-    </div>
-
-    <div class="board-col" data-status="engaged">
-      <div class="board-col-head">
-        <span class="cu-status-dot engaged"></span>
-        <strong>Engaged</strong>
-        <span class="cu-nav-count"><%= buckets.engaged.length %></span>
-      </div>
-      <div class="board-col-body">
-        <% buckets.engaged.forEach(c => { %>
-          <a class="board-card" href="/clients/<%= c.id %>">
-            <div class="board-card-title"><%= c.name %></div>
-            <% if (c.company) { %><div class="board-card-sub"><%= c.company %></div><% } %>
-            <div class="board-card-meta">
-              <% if (c.sector) { %><span class="tag"><%= c.sector %></span><% } %>
-            </div>
-          </a>
-        <% }) %>
-        <% if (!buckets.engaged.length) { %>
-          <div class="board-empty">No engagement</div>
-        <% } %>
-      </div>
-    </div>
-
-    <div class="board-col" data-status="won">
-      <div class="board-col-head">
-        <span class="cu-status-dot won"></span>
-        <strong>Won</strong>
-        <span class="cu-nav-count"><%= buckets.won.length %></span>
-      </div>
-      <div class="board-col-body">
-        <% buckets.won.forEach(c => { %>
-          <a class="board-card" href="/clients/<%= c.id %>">
-            <div class="board-card-title"><%= c.name %></div>
-            <% if (c.company) { %><div class="board-card-sub"><%= c.company %></div><% } %>
-            <div class="board-card-meta">
-              <% if (c.sector) { %><span class="tag"><%= c.sector %></span><% } %>
-            </div>
-          </a>
-        <% }) %>
-        <% if (!buckets.won.length) { %>
-          <div class="board-empty">No wins yet</div>
-        <% } %>
-      </div>
-    </div>
+    <% }) %>
   </div>
 
 </div>
 </main>
 </div>
 <%- include('partials/foot') %>
+
+<script>
+// Drag-and-drop status updates on /board
+let draggedId = null;
+
+function onBoardDragStart(e) {
+  const card = e.currentTarget;
+  draggedId = card.dataset.id;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', draggedId);
+  card.classList.add('dragging');
+}
+function onBoardDragOver(e) {
+  if (e.preventDefault) e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+  return false;
+}
+function onBoardDrop(e) {
+  if (e.stopPropagation) e.stopPropagation();
+  const col = e.currentTarget;
+  col.classList.remove('drag-over');
+  const id = e.dataTransfer.getData('text/plain') || draggedId;
+  const newStatus = col.dataset.status;
+  if (!id || !newStatus) return;
+  // Optimistic: move the card in the DOM
+  const card = document.querySelector(`.board-card[data-id="${id}"]`);
+  if (card) {
+    col.appendChild(card);
+  }
+  // POST the change
+  fetch(`/clients/${id}/status`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: newStatus }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) {
+        alert('Could not move: ' + data.error);
+        location.reload();
+        return;
+      }
+      // Show a small toast
+      showToast('Moved to ' + newStatus);
+    })
+    .catch(err => {
+      console.error('Move failed:', err);
+      alert('Move failed. Reloading…');
+      location.reload();
+    });
+}
+// Remove drag-over styling on dragleave
+document.addEventListener('dragleave', function(e) {
+  const col = e.target.closest && e.target.closest('.board-col-body');
+  if (col) col.classList.remove('drag-over');
+});
+// Clean up dragging class on dragend
+document.addEventListener('dragend', function(e) {
+  if (e.target && e.target.classList) e.target.classList.remove('dragging');
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+});
+function showToast(msg) {
+  let toast = document.getElementById('boardToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'boardToast';
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--brand);color:#fff;padding:10px 18px;border-radius:6px;font-size:13px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:9999;opacity:0;transition:opacity 0.2s;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 1800);
+}
+</script>

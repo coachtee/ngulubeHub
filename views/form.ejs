@@ -136,6 +136,47 @@
         </div>
       </div>
 
+      <div class="form-section-title">Next step &amp; follow-up</div>
+      <div class="form-grid">
+        <div>
+          <div class="form-group">
+            <label>Next step</label>
+            <input name="next_step" value="<%= client && client.next_step ? client.next_step : '' %>" placeholder="e.g. Send proposal, book a 30-min call, follow up on pricing">
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label>Next follow-up date</label>
+            <input type="date" name="next_followup_at" value="<%= client && client.next_followup_at ? client.next_followup_at : '' %>">
+            <div style="font-size: 11px; color: var(--text-3); margin-top: 4px;">Surfaces on Calendar + Today widget.</div>
+          </div>
+        </div>
+      </div>
+
+      <% if (client && (client.intro_status === 'Won' || client.intro_status === 'won' || client.intro_status === 'Lost' || client.intro_status === 'lost')) { %>
+      <div class="form-section-title">Outcome</div>
+      <div class="form-grid">
+        <div>
+          <div class="form-group">
+            <label>Won value (R)</label>
+            <input type="number" name="won_value_zar" value="<%= client && client.won_value_zar ? client.won_value_zar : '' %>" placeholder="0">
+            <div style="font-size: 11px; color: var(--text-3); margin-top: 4px;">When status is Won — pipeline value.</div>
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label>Lost reason</label>
+            <select name="lost_reason">
+              <option value="">— Select if lost —</option>
+              <% ['Price','Timing','No fit','Ghosted','Went with competitor','Other'].forEach(r => { %>
+                <option value="<%= r %>" <%= client && client.lost_reason === r ? 'selected' : '' %>><%= r %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+      </div>
+      <% } %>
+
       <div class="form-section-title">Notes (private, internal)</div>
       <div class="form-grid">
         <div class="form-group full">
